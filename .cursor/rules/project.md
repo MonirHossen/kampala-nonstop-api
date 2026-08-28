@@ -28,6 +28,8 @@ These rules apply to the entire `kampala-nonstop-api` codebase. Follow them in e
    - `is_active` (boolean)
    - `visibility` (string/enum: `PUBLIC` or `INTERNAL`)
 5. **Public availability rule:** Effective public availability for reference data is always `is_active = true AND visibility = 'PUBLIC'`. Never replace this with two independent booleans.
+
+   **Exception — FR-001 waitlist reference tables.** `acquisition_sources` and `interest_types` follow the client's Waitlist ERD instead: a single `active` boolean, with no `visibility` column. Availability for these two tables is therefore `active = true`. This is a deliberate, client-driven deviation approved during FR-001; do not "fix" it, and do not copy it into new reference tables. Any table not named above follows the general rule.
 6. **Junction/pivot tables:** Only for genuine many-to-many relationships, named descriptively in plural `snake_case` (e.g. `activity_tags`, `experience_activities`). One-to-many relationships use a foreign key column, not a pivot table.
 
 ## Validation & Code Style
