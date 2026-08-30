@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 
 COMPOSE       := docker compose --env-file .env.docker
-COMPOSE_DEV   := $(COMPOSE) -f docker-compose.yml
+COMPOSE_DEV   := $(COMPOSE) --profile dev -f docker-compose.yml
 COMPOSE_PROD  := $(COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml
 APP_SERVICE   := app
 NGINX_SERVICE := nginx

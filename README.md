@@ -71,6 +71,31 @@ On first start the entrypoint will:
 | ---------- | ----------------------- |
 | API (Nginx)| http://localhost:8000   |
 | PostgreSQL | localhost:5432          |
+| **DB Admin (Adminer)** | http://localhost:8082 |
+
+### Web database access (Adminer)
+
+Adminer is a web UI similar to phpMyAdmin, for **PostgreSQL**.
+
+1. Start the stack: `make up`
+2. Open **http://localhost:8082**
+3. Log in with:
+
+| Field    | Value              |
+| -------- | ------------------ |
+| System   | **PostgreSQL**     |
+| Server   | `postgres`         |
+| Username | `postgres`         |
+| Password | `postgres`         |
+| Database | `kampala_nonstop`  |
+
+Change the Adminer port in `.env.docker` if needed:
+
+```dotenv
+ADMINER_PORT=8082
+```
+
+Adminer is **development only** (not started in production).
 
 Health check:
 
