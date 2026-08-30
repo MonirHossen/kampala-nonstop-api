@@ -30,7 +30,141 @@ SRS v1.0 described a conventional OTA/marketplace flow and **must not** be used 
 
 PostgreSQL is a hard requirement, not a preference. The schema uses native `uuid` primary keys, `timestamptz` columns and `text[]` arrays, so SQLite and MySQL are not viable substitutes — including for tests.
 
-## Getting started
+## Docker setup (recommended)
+
+Use Docker when setting up the project for the first time. Everything runs inside this repository — no root-level Docker config is required.
+
+### Prerequisites
+
+- [Docker Engine](https://docs.docker.com/engine/install/) 24+
+- [Docker Compose](https://docs.docker.com/compose/) v2
+- `make` (optional but recommended — all commands below have a plain `docker compose` equivalent)
+
+### First-time setup
+
+```bash
+cd kampala-nonstop-api
+
+# 1. Create env files and build images
+make init
+
+# 2. Edit Laravel env for Docker (if .env was copied from .env.example)
+#    Set these values in .env:
+#      DB_HOST=postgres
+#      DB_PASSWORD=postgres
+#      APP_URL=http://localhost:8000
+
+# 3. Start the stack
+make up
+```
+
+On first start the entrypoint will:
+
+- wait for PostgreSQL to become healthy
+- install Composer dependencies (into a Docker volume)
+- generate `APP_KEY` if missing
+- run database migrations
+
+### Services and URLs
+
+| Service    | URL / Port              |
+| ---------- | ----------------------- |
+| API (Nginx)| http://localhost:8000   |
+| PostgreSQL | localhost:5432          |
+
+Health check:
+
+```bash
+curl http://localhost:8000/api/v1/health
+# {"status":"ok","version":"v1"}
+```
+
+### Environment files
+
+| File                 | Purpose                                      |
+| -------------------- | -------------------------------------------- |
+| `.env`               | Laravel application config                   |
+| `.env.docker`        | Docker Compose ports and Postgres credentials |
+| `.env.example`       | Laravel template (local/non-Docker)          |
+| `.env.docker.example`| Docker Compose template                      |
+
+Copy templates:
+
+```bash
+cp .env.example .env
+cp .env.docker.example .env.docker
+```
+
+For Docker, set at minimum in `.env`:
+
+```dotenv
+DB_HOST=postgres
+DB_PASSWORD=postgres
+APP_URL=http://localhost:8000
+```
+
+Port overrides go in `.env.docker`:
+
+```dotenv
+APP_PORT=8000
+POSTGRES_PORT=5432
+```
+
+### Make commands
+
+Run `make help` to list all targets.
+
+| Command | Description |
+| ------- | ----------- |
+| `make init` | Create env files and build images |
+| `make up` | Start dev stack (app + nginx + postgres) |
+| `make down` | Stop containers |
+| `make logs` | Tail logs |
+| `make ps` | Show container status |
+| `make shell` | Bash into the app container |
+| `make migrate` | Run migrations |
+| `make fresh` | Reset DB and re-run migrations |
+| `make test` | Run PHPUnit inside Docker |
+| `make artisan cmd="route:list"` | Run any Artisan command |
+| `make composer cmd="install"` | Run Composer inside the container |
+| `make clean` | Stop stack and remove volumes |
+| `make prod-build` | Build production images |
+| `make prod-up` | Start production stack |
+
+### Plain Docker Compose (without Make)
+
+```bash
+docker compose --env-file .env.docker -f docker-compose.yml up -d
+docker compose --env-file .env.docker -f docker-compose.yml ps
+docker compose --env-file .env.docker -f docker-compose.yml logs -f
+docker compose --env-file .env.docker -f docker-compose.yml down
+```
+
+Production:
+
+```bash
+docker compose --env-file .env.docker -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+### Troubleshooting
+
+**Port already in use.** Change `APP_PORT` or `POSTGRES_PORT` in `.env.docker`, then run `make down && make up`.
+
+**502 / 500 on first request.** Wait for Composer install and migrations to finish: `make logs`.
+
+**Reset everything (including database):**
+
+```bash
+make clean
+make init
+make up
+```
+
+---
+
+## Local setup (without Docker)
+
+Use this if you prefer PHP and PostgreSQL installed directly on your machine.
 
 ### 1. Install dependencies
 
