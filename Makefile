@@ -7,7 +7,7 @@ APP_SERVICE   := app
 NGINX_SERVICE := nginx
 DB_SERVICE    := postgres
 
-.PHONY: help init build up down restart logs ps shell artisan composer migrate fresh test clean prod-build prod-up prod-down
+.PHONY: help init build up down restart logs ps shell artisan composer migrate fresh test clean prod-build prod-up prod-down queue-logs queue-restart
 
 help: ## Show available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -20,7 +20,7 @@ init: ## Copy env templates and build images
 build: ## Build development Docker images
 	$(COMPOSE_DEV) build
 
-up: ## Start development stack (API + PostgreSQL + Nginx)
+up: ## Start development stack (API + PostgreSQL + Nginx + queue worker)
 	$(COMPOSE_DEV) up -d
 
 down: ## Stop development stack
@@ -30,6 +30,12 @@ restart: down up ## Restart development stack
 
 logs: ## Tail logs from all services
 	$(COMPOSE_DEV) logs -f
+
+queue-logs: ## Tail queue worker logs
+	$(COMPOSE) -f docker-compose.yml logs -f queue
+
+queue-restart: ## Restart queue worker
+	$(COMPOSE) -f docker-compose.yml restart queue
 
 ps: ## Show running containers
 	$(COMPOSE_DEV) ps

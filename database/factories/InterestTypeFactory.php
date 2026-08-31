@@ -22,7 +22,7 @@ class InterestTypeFactory extends Factory
 
         return [
             'name' => Str::title($name),
-            'code' => Str::upper(Str::slug($name, '_')),
+            'code' => Str::lower(Str::slug($name, '_')),
             'description' => fake()->optional()->sentence(),
             'display_order' => fake()->numberBetween(0, 100),
             'active' => true,

@@ -34,6 +34,17 @@ class StoreWaitlistSignupRequest extends FormRequest
             $normalised['email'] = strtolower(trim($this->input('email')));
         }
 
+        if ($this->has('acquisition_source_code') && is_string($this->input('acquisition_source_code'))) {
+            $normalised['acquisition_source_code'] = strtoupper(trim($this->input('acquisition_source_code')));
+        }
+
+        if ($this->has('interest_codes') && is_array($this->input('interest_codes'))) {
+            $normalised['interest_codes'] = array_values(array_filter(array_map(
+                static fn (mixed $code): mixed => is_string($code) ? strtolower(trim($code)) : $code,
+                $this->input('interest_codes')
+            )));
+        }
+
         $countries = $this->input('countries_of_interest');
 
         if (is_array($countries) && $countries !== []) {
@@ -63,7 +74,6 @@ class StoreWaitlistSignupRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::exists('acquisition_sources', 'code')->where('active', true),
             ],
 
             'interest_codes' => ['nullable', 'array'],
@@ -88,7 +98,6 @@ class StoreWaitlistSignupRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'acquisition_source_code.exists' => 'The selected acquisition source is not recognised.',
             'interest_codes.*.exists' => 'One or more selected interests are not recognised.',
         ];
     }

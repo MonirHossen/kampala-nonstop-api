@@ -318,7 +318,7 @@ routes/
 
 ### FR-001 — Waitlist & Acquisition
 
-Built from the client's Waitlist ERD. The referral **`invitations`** table on that ERD is deliberately **not** built; it remains out of scope pending client confirmation that it moves into V0.
+Built from the client's Waitlist ERD, including friend **invitations**.
 
 **Tables**
 
@@ -328,6 +328,7 @@ Built from the client's Waitlist ERD. The referral **`invitations`** table on th
 | `interest_types` | Reference: travel interests |
 | `waitlist_signups` | Signup records, keyed by email |
 | `waitlist_signup_interests` | Junction, unique on `(waitlist_signup_id, interest_type_id)` |
+| `waitlist_invitations` | Friend invites sent by a registrant |
 
 There is **no stored status column** — by client design, status is always derived from `unsubscribed`. Use the `active()` and `unsubscribed()` scopes on `WaitlistSignup`; do not add a status column.
 
@@ -335,7 +336,10 @@ There is **no stored status column** — by client design, status is always deri
 
 | Method | Path | Notes |
 |---|---|---|
-| `POST` | `/api/v1/waitlist` | Public signup |
+| `POST` | `/api/v1/waitlist` | Public signup (sends welcome email on first join) |
+| `POST` | `/api/v1/waitlist/invitations` | Public friend invite (sends invitation email) |
+| `GET` | `/api/v1/interest-types` | Public active interests (form + discover section) |
+| `GET` | `/api/v1/acquisition-sources` | Public active acquisition sources |
 | `GET` | `/api/v1/admin/waitlist` | Paginated, filterable |
 | `GET` | `/api/v1/admin/waitlist/export` | CSV, same filters |
 
@@ -347,15 +351,26 @@ There is **no stored status column** — by client design, status is always deri
   "surname": "Okello",
   "email": "amina@example.com",
   "country_code": "UG",
-  "acquisition_source_code": "INSTAGRAM",
-  "interest_codes": ["NIGHTLIFE", "FOOD"],
+  "acquisition_source_code": "UNAA_DENVER_2026",
+  "interest_codes": ["food_local_life", "culture_heritage"],
   "marketing_consent": true,
   "countries_of_interest": ["UG"],
   "source_details": "utm_source=newsletter"
 }
 ```
 
-The frontend sends human-readable **codes**, never raw UUIDs; the service resolves them. `countries_of_interest` defaults to `["UG"]`. The 201 response returns only `id`, `first_name`, `email` and `created_at` — consent and acquisition internals are never exposed publicly.
+The frontend sends human-readable **codes**, never raw UUIDs; the service resolves them. Unknown acquisition source codes fall back to `OTHER` (with the requested code recorded in `source_details`). `countries_of_interest` defaults to `["UG"]`. The 201 response returns `id`, `first_name`, `surname`, `email` and `created_at` — consent and acquisition internals are never exposed publicly.
+
+Set `FRONTEND_URL` in `.env` so welcome and invitation emails link back to `/waitlist/join`.
+
+**Email delivery** is asynchronous. Welcome and invitation mailables implement `ShouldQueue`, are dispatched with `Mail::queue()`, and retry up to 3 times. Run a queue worker (the Compose `queue` service) with `QUEUE_CONNECTION=database`:
+
+```bash
+make up            # includes the queue worker
+make queue-logs    # tail worker output
+```
+
+Without a running worker, API responses stay fast but emails stay in the `jobs` table until processed.
 
 **Admin filters:** `acquisition_source_code`, `interest_code`, `unsubscribed`, `country_code`, `created_from`, `created_to`, `per_page`.
 

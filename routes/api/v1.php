@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\AcquisitionSourceController;
+use App\Http\Controllers\Api\InterestTypeController;
 use App\Http\Controllers\Api\WaitlistController;
+use App\Http\Controllers\Api\WaitlistInvitationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,6 +30,9 @@ Route::get('/health', function () {
 */
 
 Route::post('/waitlist', [WaitlistController::class, 'store']);
+Route::post('/waitlist/invitations', [WaitlistInvitationController::class, 'store']);
+Route::get('/interest-types', [InterestTypeController::class, 'index']);
+Route::get('/acquisition-sources', [AcquisitionSourceController::class, 'index']);
 
 /*
 |--------------------------------------------------------------------------

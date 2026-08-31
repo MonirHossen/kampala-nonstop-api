@@ -28,6 +28,7 @@ class WaitlistController extends Controller
         return response()->json([
             'id' => $signup->id,
             'first_name' => $signup->first_name,
+            'surname' => $signup->surname,
             'email' => $signup->email,
             'created_at' => $signup->created_at,
         ], 201);

@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
+use App\Mail\WaitlistWelcomeMail;
 use App\Models\AcquisitionSource;
 use App\Models\InterestType;
 use App\Models\WaitlistSignup;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class WaitlistService
@@ -21,27 +23,46 @@ class WaitlistService
      */
     public function join(array $data): WaitlistSignup
     {
-        $acquisitionSourceId = $this->resolveAcquisitionSourceId((string) $data['acquisition_source_code']);
+        $requestedSource = strtoupper(trim((string) $data['acquisition_source_code']));
+        $acquisitionSourceId = $this->resolveAcquisitionSourceId($requestedSource);
         $interestTypeIds = $this->resolveInterestTypeIds($data['interest_codes'] ?? []);
 
+        $resolvedCode = AcquisitionSource::query()->where('id', $acquisitionSourceId)->value('code');
+        if (is_string($resolvedCode) && $resolvedCode !== $requestedSource) {
+            $detail = trim((string) ($data['source_details'] ?? ''));
+            $note = 'requested_source='.$requestedSource;
+            $data['source_details'] = $detail === '' ? $note : $detail.' | '.$note;
+        }
+
         try {
-            return DB::transaction(
-                fn (): WaitlistSignup => $this->createOrMerge($data, $acquisitionSourceId, $interestTypeIds)
+            [$signup, $isNew] = DB::transaction(
+                function () use ($data, $acquisitionSourceId, $interestTypeIds): array {
+                    return $this->createOrMerge($data, $acquisitionSourceId, $interestTypeIds);
+                }
             );
         } catch (UniqueConstraintViolationException) {
             // A concurrent request (typically a double-clicked form) inserted the
             // same email first. The row exists now, so merge into it instead.
-            return DB::transaction(
-                fn (): WaitlistSignup => $this->createOrMerge($data, $acquisitionSourceId, $interestTypeIds)
+            [$signup, $isNew] = DB::transaction(
+                function () use ($data, $acquisitionSourceId, $interestTypeIds): array {
+                    return $this->createOrMerge($data, $acquisitionSourceId, $interestTypeIds);
+                }
             );
         }
+
+        if ($isNew) {
+            Mail::to($signup->email)->queue(new WaitlistWelcomeMail($signup));
+        }
+
+        return $signup;
     }
 
     /**
      * @param  array<string, mixed>  $data
      * @param  list<string>  $interestTypeIds
+     * @return array{0: WaitlistSignup, 1: bool}
      */
-    private function createOrMerge(array $data, string $acquisitionSourceId, array $interestTypeIds): WaitlistSignup
+    private function createOrMerge(array $data, string $acquisitionSourceId, array $interestTypeIds): array
     {
         $existing = WaitlistSignup::query()
             ->where('email', $data['email'])
@@ -49,10 +70,10 @@ class WaitlistService
             ->first();
 
         if ($existing instanceof WaitlistSignup) {
-            return $this->mergeIntoExisting($existing, $data, $interestTypeIds);
+            return [$this->mergeIntoExisting($existing, $data, $interestTypeIds), false];
         }
 
-        return $this->createSignup($data, $acquisitionSourceId, $interestTypeIds);
+        return [$this->createSignup($data, $acquisitionSourceId, $interestTypeIds), true];
     }
 
     /**
@@ -149,13 +170,23 @@ class WaitlistService
             ->where('code', $code)
             ->value('id');
 
-        if ($id === null) {
+        if ($id !== null) {
+            return (string) $id;
+        }
+
+        $fallbackId = AcquisitionSource::query()
+            ->active()
+            ->whereIn('code', ['OTHER', 'DIRECT'])
+            ->orderByRaw("CASE code WHEN 'OTHER' THEN 0 WHEN 'DIRECT' THEN 1 ELSE 2 END")
+            ->value('id');
+
+        if ($fallbackId === null) {
             throw ValidationException::withMessages([
                 'acquisition_source_code' => 'The selected acquisition source is not recognised.',
             ]);
         }
 
-        return (string) $id;
+        return (string) $fallbackId;
     }
 
     /**

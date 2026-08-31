@@ -82,6 +82,36 @@ services:
     profiles:
       - dev
 
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: development
+    container_name: ${COMPOSE_PROJECT_NAME:-kampala-nonstop-api}-queue
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_DATABASE: ${POSTGRES_DB:-kampala_nonstop}
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      QUEUE_CONNECTION: database
+      RUN_MIGRATIONS: "false"
+    volumes:
+      - .:/var/www/html
+      - vendor_data:/var/www/html/vendor
+    command: php artisan queue:work database --sleep=1 --tries=3 --backoff=10 --timeout=90 --max-time=3600
+    depends_on:
+      postgres:
+        condition: service_healthy
+      app:
+        condition: service_started
+    networks:
+      - api
+
 volumes:
   postgres_data:
   vendor_data:
