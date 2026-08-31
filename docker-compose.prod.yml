@@ -14,3 +14,12 @@ services:
   nginx:
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+  queue:
+    build:
+      target: production
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      RUN_MIGRATIONS: "false"
+    volumes: []
