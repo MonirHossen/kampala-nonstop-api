@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\WaitlistUrls;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -17,10 +18,7 @@ Route::get('/', function () {
 */
 
 Route::get('/waitlist/join', function () {
-    $frontend = rtrim((string) config('app.frontend_url'), '/');
-    $query = request()->getQueryString();
+    $source = trim((string) request()->query('source')) ?: 'referral';
 
-    $target = $frontend.'/waitlist/join'.($query ? '?'.$query : '?source=referral');
-
-    return redirect()->away($target);
+    return redirect()->away(WaitlistUrls::join($source));
 });
