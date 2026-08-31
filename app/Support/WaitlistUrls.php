@@ -15,6 +15,6 @@ final class WaitlistUrls
             $source = self::DEFAULT_SOURCE;
         }
 
-        return $base.'/?source='.rawurlencode($source).'#waitlist';
+        return $base.'/waitlist/join?source='.rawurlencode($source);
     }
 }
