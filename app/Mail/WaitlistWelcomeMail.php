@@ -42,6 +42,9 @@ class WaitlistWelcomeMail extends Mailable implements ShouldQueue
             with: [
                 'firstName' => $this->signup->first_name,
                 'joinUrl' => WaitlistUrls::join(),
+                'unsubscribeUrl' => $this->signup->marketing_consent
+                    ? WaitlistUrls::unsubscribe($this->signup)
+                    : null,
             ],
         );
     }

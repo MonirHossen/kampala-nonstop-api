@@ -37,6 +37,8 @@ services:
       DB_DATABASE: ${POSTGRES_DB:-kampala_nonstop}
       DB_USERNAME: ${POSTGRES_USER:-postgres}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      APP_URL: ${APP_URL:-http://localhost:8000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:4201}
       RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
     volumes:
       - .:/var/www/html
@@ -98,6 +100,8 @@ services:
       DB_DATABASE: ${POSTGRES_DB:-kampala_nonstop}
       DB_USERNAME: ${POSTGRES_USER:-postgres}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      APP_URL: ${APP_URL:-http://localhost:8000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:4201}
       QUEUE_CONNECTION: database
       RUN_MIGRATIONS: "false"
     volumes:

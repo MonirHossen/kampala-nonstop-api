@@ -337,6 +337,7 @@ There is **no stored status column** — by client design, status is always deri
 | Method | Path | Notes |
 |---|---|---|
 | `POST` | `/api/v1/waitlist` | Public signup (sends welcome email on first join) |
+| `GET` | `/api/v1/waitlist/unsubscribe/{signup}` | Signed one-click unsubscribe (redirects to frontend) |
 | `POST` | `/api/v1/waitlist/invitations` | Public friend invite (sends invitation email) |
 | `GET` | `/api/v1/interest-types` | Public active interests (form + discover section) |
 | `GET` | `/api/v1/acquisition-sources` | Public active acquisition sources |
@@ -361,7 +362,9 @@ There is **no stored status column** — by client design, status is always deri
 
 The frontend sends human-readable **codes**, never raw UUIDs; the service resolves them. Unknown acquisition source codes fall back to `OTHER` (with the requested code recorded in `source_details`). `countries_of_interest` defaults to `["UG"]`. The 201 response returns `id`, `first_name`, `surname`, `email` and `created_at` — consent and acquisition internals are never exposed publicly.
 
-Set `FRONTEND_URL` in `.env` so welcome and invitation emails link back to `/waitlist/join`.
+Set `FRONTEND_URL` in `.env` so welcome and invitation emails link back to `/waitlist/join`, and so unsubscribe redirects land on `/waitlist/unsubscribe`.
+
+**Unsubscribe.** When a signup opts into marketing updates (`marketing_consent = true`), the welcome email includes a signed link to `GET /api/v1/waitlist/unsubscribe/{signup}`. The link is validated by Laravel's `signed` middleware (HMAC tied to `APP_KEY`; no expiry so old emails keep working). A valid click sets `unsubscribed = true` without changing `marketing_consent`, then redirects to `{FRONTEND_URL}/waitlist/unsubscribe?status=success|already|invalid`. Re-joining the waitlist clears `unsubscribed` back to `false`.
 
 **Email delivery** is asynchronous. Welcome and invitation mailables implement `ShouldQueue`, are dispatched with `Mail::queue()`, and retry up to 3 times. Run a queue worker (the Compose `queue` service) with `QUEUE_CONNECTION=database`:
 
@@ -399,7 +402,6 @@ Idempotent — matches on `code` and updates in place.
 ## Known gaps
 
 - **The admin endpoints are unauthenticated.** `IndexWaitlistSignupRequest::authorize()` returns `true` and the route group carries a TODO. Anyone who can reach the app can list and export the full waitlist, including email addresses and consent state. **Do not deploy beyond local development until auth and role middleware are in place.**
-- There is no unsubscribe endpoint yet. `unsubscribed` can currently only be set directly in the database.
 - Authentication, user roles and the rest of the V0 scope (discovery, Nonstop Engine, concierge operations, banner advertising, knowledge base) are not started.
 
 ## Conventions for contributors
