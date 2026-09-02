@@ -21,8 +21,13 @@
                 <strong style="display:block;margin-bottom:4px;color:#c2410c;">What happens next</strong>
                 We will be in touch as we approach launch. No spam — only meaningful updates about
                 experiences, travel inspiration and offers.
-                <br>
-                You can unsubscribe from at any time.
+                @if ($unsubscribeUrl)
+                    <br>
+                    <a href="{{ $unsubscribeUrl }}" style="color:#c2410c;text-decoration:underline;">Unsubscribe from updates</a>
+                @else
+                    <br>
+                    You can unsubscribe at any time.
+                @endif
             </td>
         </tr>
     </table>

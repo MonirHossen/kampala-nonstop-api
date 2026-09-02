@@ -49,9 +49,18 @@ bootstrap_app() {
         fix_permissions
     fi
 
-    if ! grep -q '^APP_KEY=base64:' .env 2>/dev/null; then
-        echo "Generating application key..."
-        php artisan key:generate --force --no-interaction
+    # Prefer APP_KEY from environment (Docker). Fall back to generating into .env.
+    if [ -z "${APP_KEY:-}" ] || [[ "${APP_KEY}" != base64:* ]]; then
+        if [ ! -f .env ]; then
+            echo "Creating .env..."
+            touch .env
+        fi
+        if ! grep -qE '^APP_KEY=base64:' .env 2>/dev/null; then
+            echo "Generating application key..."
+            php artisan key:generate --force --no-interaction
+            # Export so later artisan commands (config:cache) see it
+            export APP_KEY="$(grep -E '^APP_KEY=base64:' .env | head -1 | cut -d= -f2-)"
+        fi
     fi
 
     if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then

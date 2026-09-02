@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AcquisitionSourceController;
 use App\Http\Controllers\Api\InterestTypeController;
 use App\Http\Controllers\Api\WaitlistController;
 use App\Http\Controllers\Api\WaitlistInvitationController;
+use App\Http\Controllers\Api\WaitlistUnsubscribeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,6 +31,9 @@ Route::get('/health', function () {
 */
 
 Route::post('/waitlist', [WaitlistController::class, 'store']);
+Route::get('/waitlist/unsubscribe/{signup}', [WaitlistUnsubscribeController::class, 'store'])
+    ->middleware('signed')
+    ->name('waitlist.unsubscribe');
 Route::post('/waitlist/invitations', [WaitlistInvitationController::class, 'store']);
 Route::get('/interest-types', [InterestTypeController::class, 'index']);
 Route::get('/acquisition-sources', [AcquisitionSourceController::class, 'index']);

@@ -58,6 +58,23 @@ class WaitlistService
     }
 
     /**
+     * Mark a signup as unsubscribed from marketing updates.
+     *
+     * @return bool True when newly unsubscribed; false when already unsubscribed.
+     */
+    public function unsubscribe(WaitlistSignup $signup): bool
+    {
+        if ($signup->unsubscribed) {
+            return false;
+        }
+
+        $signup->unsubscribed = true;
+        $signup->save();
+
+        return true;
+    }
+
+    /**
      * @param  array<string, mixed>  $data
      * @param  list<string>  $interestTypeIds
      * @return array{0: WaitlistSignup, 1: bool}
