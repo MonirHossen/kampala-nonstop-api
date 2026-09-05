@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -15,11 +14,12 @@ class DatabaseSeeder extends Seeder
     {
         User::query()->firstOrCreate(
             ['email' => 'test@example.com'],
-            ['name' => 'Test User', 'password' => 'password'],
+            ['password' => 'password', 'status' => 'active'],
         );
 
         $this->call([
             WaitlistReferenceSeeder::class,
+            ListingReferenceSeeder::class,
         ]);
     }
 }
