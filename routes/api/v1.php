@@ -1,7 +1,15 @@
 <?php
 
 use App\Http\Controllers\Api\AcquisitionSourceController;
+use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\PasswordController;
 use App\Http\Controllers\Api\InterestTypeController;
+use App\Http\Controllers\Api\User\CitizenshipController;
+use App\Http\Controllers\Api\User\ConsentController;
+use App\Http\Controllers\Api\User\FavouriteController;
+use App\Http\Controllers\Api\User\NotificationPreferenceController;
+use App\Http\Controllers\Api\User\PreferenceController;
+use App\Http\Controllers\Api\User\ProfileController;
 use App\Http\Controllers\Api\WaitlistController;
 use App\Http\Controllers\Api\WaitlistInvitationController;
 use App\Http\Controllers\Api\WaitlistUnsubscribeController;
@@ -26,6 +34,60 @@ Route::get('/health', function () {
 
 /*
 |--------------------------------------------------------------------------
+| Auth — public
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/forgot-password', [PasswordController::class, 'forgot']);
+    Route::post('/reset-password', [PasswordController::class, 'reset']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Auth — authenticated
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth:sanctum')->prefix('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::put('/password', [PasswordController::class, 'update']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated user profile domain
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth:sanctum')->prefix('user')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+
+    Route::get('/preferences', [PreferenceController::class, 'show']);
+    Route::put('/preferences', [PreferenceController::class, 'update']);
+
+    Route::get('/notification-preferences', [NotificationPreferenceController::class, 'show']);
+    Route::put('/notification-preferences', [NotificationPreferenceController::class, 'update']);
+
+    Route::get('/citizenships', [CitizenshipController::class, 'index']);
+    Route::post('/citizenships', [CitizenshipController::class, 'store']);
+    Route::put('/citizenships/{citizenship}', [CitizenshipController::class, 'update']);
+    Route::delete('/citizenships/{citizenship}', [CitizenshipController::class, 'destroy']);
+
+    Route::get('/consents', [ConsentController::class, 'index']);
+    Route::put('/consents/{type}', [ConsentController::class, 'update']);
+
+    Route::get('/favourites', [FavouriteController::class, 'index']);
+    Route::post('/favourites', [FavouriteController::class, 'store']);
+    Route::delete('/favourites/{favourite}', [FavouriteController::class, 'destroy']);
+});
+
+/*
+|--------------------------------------------------------------------------
 | FR-001 Waitlist & Acquisition — public
 |--------------------------------------------------------------------------
 */
@@ -43,13 +105,11 @@ Route::get('/acquisition-sources', [AcquisitionSourceController::class, 'index']
 | FR-001 Waitlist & Acquisition — admin
 |--------------------------------------------------------------------------
 |
-| TODO: apply auth + admin/concierge role middleware to this group once
-| authentication is implemented. These endpoints are currently unprotected
-| and must not be deployed beyond local development as-is.
+| Authenticated for now. Admin/concierge role middleware remains TODO.
 |
 */
 
-Route::prefix('admin')->group(function () {
+Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/waitlist/export', [WaitlistController::class, 'export']);
     Route::get('/waitlist', [WaitlistController::class, 'index']);
 });
