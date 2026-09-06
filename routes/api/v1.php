@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AcquisitionSourceController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordController;
+use App\Http\Controllers\Api\DeployController;
 use App\Http\Controllers\Api\InterestTypeController;
 use App\Http\Controllers\Api\User\CitizenshipController;
 use App\Http\Controllers\Api\User\ConsentController;
@@ -29,7 +30,25 @@ Route::get('/health', function () {
     return response()->json([
         'status' => 'ok',
         'version' => 'v1',
+        'deploy_branch' => config('deploy.branch', 'main'),
     ]);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Deploy — pull latest code for this server's branch
+|--------------------------------------------------------------------------
+|
+| Main server (DEPLOY_BRANCH=main) → git pull origin/main
+| Dev server  (DEPLOY_BRANCH=dev)  → git pull origin/dev
+|
+| Auth: Authorization: Bearer <DEPLOY_TOKEN>
+|
+*/
+
+Route::prefix('deploy')->group(function () {
+    Route::get('/status', [DeployController::class, 'status']);
+    Route::post('/pull', [DeployController::class, 'pull']);
 });
 
 /*
