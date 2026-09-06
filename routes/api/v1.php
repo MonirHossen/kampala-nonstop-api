@@ -60,6 +60,7 @@ Route::prefix('deploy')->group(function () {
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/social', [AuthController::class, 'social']);
     Route::post('/forgot-password', [PasswordController::class, 'forgot']);
     Route::post('/reset-password', [PasswordController::class, 'reset']);
 });

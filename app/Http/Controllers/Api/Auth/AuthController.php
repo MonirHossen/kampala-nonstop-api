@@ -5,14 +5,19 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\SocialLoginRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
+use App\Services\SocialAuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    public function __construct(private readonly AuthService $authService) {}
+    public function __construct(
+        private readonly AuthService $authService,
+        private readonly SocialAuthService $socialAuthService,
+    ) {}
 
     public function register(RegisterRequest $request): JsonResponse
     {
@@ -28,6 +33,17 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $result = $this->authService->login($request->validated());
+
+        return response()->json([
+            'token' => $result['token'],
+            'token_type' => 'Bearer',
+            'user' => new UserResource($result['user']),
+        ]);
+    }
+
+    public function social(SocialLoginRequest $request): JsonResponse
+    {
+        $result = $this->socialAuthService->authenticate($request->validated());
 
         return response()->json([
             'token' => $result['token'],

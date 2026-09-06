@@ -93,9 +93,11 @@ class AuthService
             ->whereRaw('LOWER(email) = ?', [strtolower(trim($credentials['email']))])
             ->first();
 
-        if ($user === null || ! Hash::check($credentials['password'], $user->password)) {
+        if ($user === null || $user->password === null || ! Hash::check($credentials['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+                'email' => [$user !== null && $user->password === null
+                    ? 'This account uses social sign-in. Continue with Google or Facebook, or reset your password to set one.'
+                    : 'The provided credentials are incorrect.'],
             ]);
         }
 
@@ -189,9 +191,11 @@ class AuthService
      */
     public function changePassword(User $user, array $data): void
     {
-        if (! Hash::check($data['current_password'], $user->password)) {
+        if ($user->password === null || ! Hash::check($data['current_password'], $user->password)) {
             throw ValidationException::withMessages([
-                'current_password' => ['The current password is incorrect.'],
+                'current_password' => [$user->password === null
+                    ? 'This account does not have a password yet. Use reset password to set one.'
+                    : 'The current password is incorrect.'],
             ]);
         }
 
