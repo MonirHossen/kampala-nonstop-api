@@ -11,6 +11,7 @@ use App\Services\SocialAuth\GoogleTokenVerifier;
 use App\Services\SocialAuth\VerifiedSocialIdentity;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Laravel\Socialite\Contracts\User as SocialiteUser;
 
 class SocialAuthService
 {
@@ -20,6 +21,8 @@ class SocialAuthService
     ) {}
 
     /**
+     * Token-verify flow (SPA SDK). Kept for API clients that already use it.
+     *
      * @param  array{provider: string, token: string, device_name?: string}  $data
      * @return array{user: User, token: string}
      */
@@ -27,6 +30,35 @@ class SocialAuthService
     {
         $identity = $this->verifierFor($data['provider'])->verify($data['token']);
 
+        return $this->issueSession($identity, $data['device_name'] ?? 'api');
+    }
+
+    /**
+     * Laravel Socialite OAuth callback flow.
+     *
+     * @return array{user: User, token: string}
+     */
+    public function authenticateFromSocialite(string $provider, SocialiteUser $socialUser): array
+    {
+        $identity = $this->identityFromSocialite($provider, $socialUser);
+
+        return $this->issueSession($identity, 'web');
+    }
+
+    public function userForExchange(string $userId): User
+    {
+        /** @var User $user */
+        $user = User::query()->findOrFail($userId);
+        $user->load(['profile', 'preferences', 'notificationPreferences', 'consents']);
+
+        return $user;
+    }
+
+    /**
+     * @return array{user: User, token: string}
+     */
+    private function issueSession(VerifiedSocialIdentity $identity, string $deviceName): array
+    {
         if (! $identity->emailVerified) {
             throw ValidationException::withMessages([
                 'token' => ['A verified email address is required to sign in with this provider.'],
@@ -43,12 +75,68 @@ class SocialAuthService
 
         $user->load(['profile', 'preferences', 'notificationPreferences', 'consents']);
 
-        $deviceName = $data['device_name'] ?? 'api';
-
         return [
             'user' => $user,
             'token' => $user->createToken($deviceName)->plainTextToken,
         ];
+    }
+
+    private function identityFromSocialite(string $provider, SocialiteUser $socialUser): VerifiedSocialIdentity
+    {
+        $email = strtolower(trim((string) ($socialUser->getEmail() ?? '')));
+        if ($email === '') {
+            throw ValidationException::withMessages([
+                'token' => ['The provider did not share an email address. Allow email access and try again.'],
+            ]);
+        }
+
+        $providerUserId = (string) $socialUser->getId();
+        if ($providerUserId === '') {
+            throw ValidationException::withMessages([
+                'token' => ['Unable to read the provider account id.'],
+            ]);
+        }
+
+        $raw = method_exists($socialUser, 'getRaw') ? $socialUser->getRaw() : [];
+        $raw = is_array($raw) ? $raw : [];
+
+        $firstName = trim((string) ($raw['given_name'] ?? $raw['first_name'] ?? ''));
+        $lastName = trim((string) ($raw['family_name'] ?? $raw['last_name'] ?? ''));
+
+        if ($firstName === '' && $lastName === '') {
+            $fullName = trim((string) ($socialUser->getName() ?? ''));
+            if ($fullName !== '') {
+                $parts = preg_split('/\s+/', $fullName, 2) ?: [];
+                $firstName = $parts[0] !== '' ? $parts[0] : 'Traveller';
+                $lastName = $parts[1] ?? 'User';
+            } else {
+                $local = strstr($email, '@', true) ?: 'traveller';
+                $firstName = ucfirst($local);
+                $lastName = 'User';
+            }
+        } elseif ($firstName === '') {
+            $firstName = 'Traveller';
+        } elseif ($lastName === '') {
+            $lastName = 'User';
+        }
+
+        $avatar = $socialUser->getAvatar();
+        $emailVerified = match ($provider) {
+            SocialAccount::PROVIDER_GOOGLE => filter_var($raw['email_verified'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            // Facebook only returns email when granted/usable.
+            SocialAccount::PROVIDER_FACEBOOK => true,
+            default => true,
+        };
+
+        return new VerifiedSocialIdentity(
+            provider: $provider,
+            providerUserId: $providerUserId,
+            email: $email,
+            emailVerified: $emailVerified,
+            firstName: $firstName,
+            lastName: $lastName,
+            avatarUrl: is_string($avatar) && $avatar !== '' ? $avatar : null,
+        );
     }
 
     private function verifierFor(string $provider): SocialTokenVerifier

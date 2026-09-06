@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AcquisitionSourceController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordController;
+use App\Http\Controllers\Api\Auth\SocialiteAuthController;
 use App\Http\Controllers\Api\DeployController;
 use App\Http\Controllers\Api\InterestTypeController;
 use App\Http\Controllers\Api\User\CitizenshipController;
@@ -61,6 +62,9 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/social', [AuthController::class, 'social']);
+    Route::post('/social/exchange', [SocialiteAuthController::class, 'exchange']);
+    Route::get('/social/{provider}/redirect', [SocialiteAuthController::class, 'redirect']);
+    Route::get('/social/{provider}/callback', [SocialiteAuthController::class, 'callback']);
     Route::post('/forgot-password', [PasswordController::class, 'forgot']);
     Route::post('/reset-password', [PasswordController::class, 'reset']);
 });

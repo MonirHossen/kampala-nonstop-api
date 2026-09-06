@@ -33,11 +33,20 @@ return [
 
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI')
+            ?: rtrim((string) env('APP_URL', 'http://localhost:8000'), '/').'/api/v1/auth/social/google/callback',
     ],
 
     'facebook' => [
-        'app_id' => env('FACEBOOK_APP_ID'),
-        'app_secret' => env('FACEBOOK_APP_SECRET'),
+        // Socialite expects client_id / client_secret keys.
+        'client_id' => env('FACEBOOK_CLIENT_ID', env('FACEBOOK_APP_ID')),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET', env('FACEBOOK_APP_SECRET')),
+        'redirect' => env('FACEBOOK_REDIRECT_URI')
+            ?: rtrim((string) env('APP_URL', 'http://localhost:8000'), '/').'/api/v1/auth/social/facebook/callback',
+        // Keep legacy keys for token-verify helpers.
+        'app_id' => env('FACEBOOK_APP_ID', env('FACEBOOK_CLIENT_ID')),
+        'app_secret' => env('FACEBOOK_APP_SECRET', env('FACEBOOK_CLIENT_SECRET')),
     ],
 
 ];
