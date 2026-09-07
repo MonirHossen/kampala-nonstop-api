@@ -139,7 +139,12 @@ VALUES
     ('CULTURE_ETIQUETTE',
      'Culture & Etiquette',
      'Long-form guidance on local customs, etiquette, social behaviour and cultural context.',
-     90, TRUE)
+     90, TRUE),
+    ('WHAT_TO_PACK',
+     'What to Pack',
+	 'Long-form guidance on appropriate clothing, footwear, adapters, medication/personal items, rain protection and destination-specific practicalities.',
+     100, TRUE)
+	 
 ON CONFLICT (code) DO UPDATE
 SET
     name        = EXCLUDED.name,
