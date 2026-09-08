@@ -20,6 +20,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             WaitlistReferenceSeeder::class,
             ListingReferenceSeeder::class,
+            GeographicAreaSeeder::class,
+            CountryGuideReferenceSeeder::class,
+            CountryGuideUgandaSeeder::class,
         ]);
     }
 }

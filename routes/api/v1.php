@@ -5,6 +5,15 @@ use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordController;
 use App\Http\Controllers\Api\Auth\SocialiteAuthController;
 use App\Http\Controllers\Api\DeployController;
+use App\Http\Controllers\Api\Guide\Admin\EssentialTypeController as AdminEssentialTypeController;
+use App\Http\Controllers\Api\Guide\Admin\EssentialValueController as AdminEssentialValueController;
+use App\Http\Controllers\Api\Guide\Admin\GeographicAreaController as AdminGeographicAreaController;
+use App\Http\Controllers\Api\Guide\Admin\RegionGuideController as AdminRegionGuideController;
+use App\Http\Controllers\Api\Guide\Admin\TravelGuideController as AdminTravelGuideController;
+use App\Http\Controllers\Api\Guide\Admin\TravelGuideTopicController as AdminTravelGuideTopicController;
+use App\Http\Controllers\Api\Guide\Admin\TravelInformationController as AdminTravelInformationController;
+use App\Http\Controllers\Api\Guide\Admin\TravelInformationTypeController as AdminTravelInformationTypeController;
+use App\Http\Controllers\Api\Guide\GuideController;
 use App\Http\Controllers\Api\InterestTypeController;
 use App\Http\Controllers\Api\User\CitizenshipController;
 use App\Http\Controllers\Api\User\ConsentController;
@@ -136,4 +145,66 @@ Route::get('/acquisition-sources', [AcquisitionSourceController::class, 'index']
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/waitlist/export', [WaitlistController::class, 'export']);
     Route::get('/waitlist', [WaitlistController::class, 'index']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Country Guide — admin
+    |--------------------------------------------------------------------------
+    |
+    | Authenticated for now. Admin/concierge role middleware remains TODO.
+    |
+    */
+    Route::prefix('guide')->group(function () {
+        Route::get('/geographic-area-types', [AdminGeographicAreaController::class, 'types']);
+        Route::get('/geographic-areas', [AdminGeographicAreaController::class, 'index']);
+        Route::post('/geographic-areas', [AdminGeographicAreaController::class, 'store']);
+        Route::put('/geographic-areas/{geographicArea}', [AdminGeographicAreaController::class, 'update']);
+
+        Route::get('/essential-types', [AdminEssentialTypeController::class, 'index']);
+        Route::post('/essential-types', [AdminEssentialTypeController::class, 'store']);
+        Route::put('/essential-types/{essentialType}', [AdminEssentialTypeController::class, 'update']);
+
+        Route::get('/essential-values', [AdminEssentialValueController::class, 'index']);
+        Route::post('/essential-values', [AdminEssentialValueController::class, 'store']);
+        Route::put('/essential-values/{essentialValue}', [AdminEssentialValueController::class, 'update']);
+        Route::delete('/essential-values/{essentialValue}', [AdminEssentialValueController::class, 'destroy']);
+
+        Route::get('/travel-guide-topics', [AdminTravelGuideTopicController::class, 'index']);
+        Route::post('/travel-guide-topics', [AdminTravelGuideTopicController::class, 'store']);
+        Route::put('/travel-guide-topics/{topic}', [AdminTravelGuideTopicController::class, 'update']);
+
+        Route::get('/travel-guides', [AdminTravelGuideController::class, 'index']);
+        Route::post('/travel-guides', [AdminTravelGuideController::class, 'store']);
+        Route::put('/travel-guides/{travelGuide}', [AdminTravelGuideController::class, 'update']);
+        Route::delete('/travel-guides/{travelGuide}', [AdminTravelGuideController::class, 'destroy']);
+
+        Route::get('/travel-information-types', [AdminTravelInformationTypeController::class, 'index']);
+        Route::post('/travel-information-types', [AdminTravelInformationTypeController::class, 'store']);
+        Route::put('/travel-information-types/{infoType}', [AdminTravelInformationTypeController::class, 'update']);
+
+        Route::get('/travel-information', [AdminTravelInformationController::class, 'index']);
+        Route::post('/travel-information', [AdminTravelInformationController::class, 'store']);
+        Route::put('/travel-information/{travelInformation}', [AdminTravelInformationController::class, 'update']);
+        Route::delete('/travel-information/{travelInformation}', [AdminTravelInformationController::class, 'destroy']);
+
+        Route::get('/region-guides', [AdminRegionGuideController::class, 'index']);
+        Route::post('/region-guides', [AdminRegionGuideController::class, 'store']);
+        Route::put('/region-guides/{regionGuide}', [AdminRegionGuideController::class, 'update']);
+        Route::delete('/region-guides/{regionGuide}', [AdminRegionGuideController::class, 'destroy']);
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Country Guide — public
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('guide')->group(function () {
+    Route::get('/{countryCode}', [GuideController::class, 'show']);
+    Route::get('/{countryCode}/essentials', [GuideController::class, 'essentials']);
+    Route::get('/{countryCode}/travel-guide', [GuideController::class, 'travelGuide']);
+    Route::get('/{countryCode}/travel-information', [GuideController::class, 'travelInformation']);
+    Route::get('/{countryCode}/regions', [GuideController::class, 'regions']);
+    Route::get('/{countryCode}/regions/{areaCode}', [GuideController::class, 'region']);
 });
