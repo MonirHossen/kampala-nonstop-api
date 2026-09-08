@@ -86,6 +86,7 @@ SET
     updated_at  = CURRENT_TIMESTAMP;
 
 
+/*
 -- =========================================================
 -- 2. Travel Guide Topics
 -- Longer editorial answers / paragraph-based guide content.
@@ -196,3 +197,4 @@ SET
     updated_at  = CURRENT_TIMESTAMP;
 
 COMMIT;
+*/

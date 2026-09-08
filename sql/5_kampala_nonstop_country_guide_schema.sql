@@ -65,6 +65,8 @@ CREATE INDEX IF NOT EXISTS idx_country_guide_essential_values_country
 CREATE INDEX IF NOT EXISTS idx_country_guide_essential_values_type
     ON country_guide_essential_values(essential_type_id);
 
+/*
+
 -- =========================================================
 -- 3. Travel Guide Topics
 -- Reusable list of longer-form editorial Guide topics.
@@ -212,3 +214,4 @@ CREATE INDEX IF NOT EXISTS idx_country_region_guides_geographic_area
     ON country_region_guides(geographic_area_id);
 
 COMMIT;
+*/
