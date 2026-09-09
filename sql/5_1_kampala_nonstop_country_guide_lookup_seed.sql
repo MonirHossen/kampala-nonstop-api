@@ -18,65 +18,130 @@ BEGIN;
 INSERT INTO country_guide_essential_types
     (code, name, description, sort_order, is_active)
 VALUES
+    ('ABOUT',
+     'About Uganda',
+     'Long-form country introduction covering people, culture and geography.',
+     1, TRUE),
+
+    ('HISTORY',
+     'History of Uganda',
+     'Long-form historical overview shown with the About Uganda tab.',
+     2, TRUE),
+
+    ('CULTURE_TRADITIONS',
+     'Culture & Traditions',
+     'Ethnic diversity, greetings, humour, music and everyday social norms.',
+     3, TRUE),
+
+    ('FOOD_DRINK_SOCIAL',
+     'Food, Drink & Social Life',
+     'Staples, street food, sharing meals and drinking culture.',
+     4, TRUE),
+
+    ('LANGUAGES_COMMUNICATION',
+     'Languages & Communication',
+     'Official and local languages, plus useful polite phrases.',
+     5, TRUE),
+
+    ('GEOGRAPHY_CLIMATE',
+     'Geography & Climate',
+     'Plateau, lakes, savannah, rainforest and seasonal rainfall.',
+     6, TRUE),
+
+    ('MAJOR_DESTINATIONS',
+     'Major Destinations & Regional Anchors',
+     'Key cities, parks and regions that orient a first visit.',
+     7, TRUE),
+
+    ('TOURISM_GLANCE',
+     'Tourism at a Glance',
+     'Wildlife, primates, birdlife and adventure in brief.',
+     8, TRUE),
+
+    ('KAMPALA_CITY_LIFE',
+     'Kampala: City Life Snapshot',
+     'Pace, transport and hospitality in the capital.',
+     9, TRUE),
+
+    ('SAFETY_REASSURANCE',
+     'Safety & Practical Reassurance',
+     'Day-to-day personal safety context for first-time visitors.',
+     11, TRUE),
+
+    ('COST_OF_LIVING',
+     'Cost of Living & Currency',
+     'Shilling, indicative exchange ranges and everyday value.',
+     12, TRUE),
+
+    ('PUBLIC_HOLIDAYS',
+     'Public Holidays & Festivals',
+     'National, religious and cultural dates plus the unofficial calendar.',
+     13, TRUE),
+
+    ('LOCAL_ETIQUETTE',
+     'Local Etiquette',
+     'Timekeeping, dress, photography and tipping for visitors.',
+     14, TRUE),
+
     ('CAPITAL',
      'Capital',
      'The capital city of the country.',
-     10, TRUE),
+     20, TRUE),
 
     ('CURRENCY',
      'Currency',
      'The primary currency used in the country.',
-     20, TRUE),
+     30, TRUE),
 
     ('CURRENCY_CODE',
      'Currency Code',
      'The ISO currency code for the primary currency.',
-     30, TRUE),
+     40, TRUE),
 
     ('LANGUAGES',
      'Languages',
      'Main official and commonly used languages relevant to visitors.',
-     40, TRUE),
+     50, TRUE),
 
     ('TIME_ZONE',
      'Time Zone',
      'The country''s primary time zone.',
-     50, TRUE),
+     60, TRUE),
 
     ('CALLING_CODE',
      'International Calling Code',
      'The international telephone dialling code.',
-     60, TRUE),
+     70, TRUE),
 
     ('DRIVING_SIDE',
      'Driving Side',
      'The side of the road on which vehicles drive.',
-     70, TRUE),
+     80, TRUE),
 
     ('ELECTRICITY',
      'Electricity',
      'Standard electricity voltage and frequency.',
-     80, TRUE),
+     90, TRUE),
 
     ('PLUG_TYPE',
      'Plug Type',
      'Electrical plug/socket type commonly used.',
-     90, TRUE),
+     100, TRUE),
 
     ('MAIN_AIRPORT',
      'Main International Airport',
      'The principal international airport for the country.',
-     100, TRUE),
+     110, TRUE),
 
     ('EMERGENCY_NUMBERS',
      'Emergency Numbers',
      'Key emergency telephone numbers useful to visitors.',
-     110, TRUE),
+     120, TRUE),
 
     ('MOBILE_INTERNET',
      'Mobile & Internet Basics',
      'Short practical overview of mobile network and internet access.',
-     120, TRUE)
+     130, TRUE)
 ON CONFLICT (code) DO UPDATE
 SET
     name        = EXCLUDED.name,
@@ -85,6 +150,7 @@ SET
     is_active   = EXCLUDED.is_active,
     updated_at  = CURRENT_TIMESTAMP;
 
+COMMIT;
 
 /*
 -- =========================================================

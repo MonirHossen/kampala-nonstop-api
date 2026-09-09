@@ -5,9 +5,9 @@ namespace App\Models;
 use App\Models\Concerns\HasUuidPrimaryKey;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class CountryTravelGuide extends Model
+class LocalKnowledgeType extends Model
 {
     use HasUuidPrimaryKey;
 
@@ -15,11 +15,10 @@ class CountryTravelGuide extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'country_code',
-        'topic_id',
-        'content',
-        'image_link',
-        'is_live',
+        'code',
+        'name',
+        'description',
+        'is_active',
     ];
 
     /**
@@ -28,7 +27,7 @@ class CountryTravelGuide extends Model
     protected function casts(): array
     {
         return [
-            'is_live' => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -36,16 +35,16 @@ class CountryTravelGuide extends Model
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
-    public function scopeLive(Builder $query): Builder
+    public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_live', true);
+        return $query->where('is_active', true);
     }
 
     /**
-     * @return BelongsTo<TravelGuideTopic, $this>
+     * @return HasMany<LocalKnowledge, $this>
      */
-    public function topic(): BelongsTo
+    public function items(): HasMany
     {
-        return $this->belongsTo(TravelGuideTopic::class, 'topic_id');
+        return $this->hasMany(LocalKnowledge::class, 'local_knowledge_type_id');
     }
 }

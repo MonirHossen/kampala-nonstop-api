@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             GeographicAreaSeeder::class,
             CountryGuideReferenceSeeder::class,
             CountryGuideUgandaSeeder::class,
+            LocalKnowledgeReferenceSeeder::class,
+            LocalKnowledgeUgandaSeeder::class,
         ]);
     }
 }

@@ -7,7 +7,7 @@ use App\Models\GeographicAreaType;
 use Illuminate\Database\Seeder;
 
 /**
- * Minimal geographic hierarchy for Country Guide Region pages.
+ * Uganda geographic hierarchy used by Local Knowledge and listings.
  *
  * Idempotent: matches on `code`.
  */
@@ -18,6 +18,7 @@ class GeographicAreaSeeder extends Seeder
         $types = [
             ['code' => 'COUNTRY', 'name' => 'Country', 'description' => 'National root geography node'],
             ['code' => 'REGION', 'name' => 'Region', 'description' => 'Primary sub-national region'],
+            ['code' => 'CITY', 'name' => 'City', 'description' => 'City or major urban settlement'],
         ];
 
         foreach ($types as $type) {
@@ -33,6 +34,7 @@ class GeographicAreaSeeder extends Seeder
 
         $countryTypeId = GeographicAreaType::query()->where('code', 'COUNTRY')->value('id');
         $regionTypeId = GeographicAreaType::query()->where('code', 'REGION')->value('id');
+        $cityTypeId = GeographicAreaType::query()->where('code', 'CITY')->value('id');
 
         $uganda = GeographicArea::query()->updateOrCreate(
             ['code' => 'UG'],
@@ -52,8 +54,10 @@ class GeographicAreaSeeder extends Seeder
             ['code' => 'UG-NORTH', 'name' => 'North'],
         ];
 
+        $regionIds = [];
+
         foreach ($regions as $region) {
-            GeographicArea::query()->updateOrCreate(
+            $saved = GeographicArea::query()->updateOrCreate(
                 ['code' => $region['code']],
                 [
                     'parent_geographic_area_id' => $uganda->id,
@@ -63,6 +67,19 @@ class GeographicAreaSeeder extends Seeder
                     'is_live' => true,
                 ],
             );
+
+            $regionIds[$region['code']] = $saved->id;
         }
+
+        GeographicArea::query()->updateOrCreate(
+            ['code' => 'UG-KAMPALA'],
+            [
+                'parent_geographic_area_id' => $regionIds['UG-CENTRAL'],
+                'geographic_area_type_id' => $cityTypeId,
+                'country_code' => 'UG',
+                'name' => 'Kampala',
+                'is_live' => true,
+            ],
+        );
     }
 }

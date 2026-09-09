@@ -4,10 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\CountryGuideEssentialType;
 use App\Models\CountryGuideEssentialValue;
-use App\Models\CountryRegionGuide;
-use App\Models\CountryTravelGuide;
-use App\Models\GeographicArea;
-use App\Models\TravelGuideTopic;
 use App\Models\User;
 use Database\Seeders\CountryGuideReferenceSeeder;
 use Database\Seeders\CountryGuideUgandaSeeder;
@@ -28,7 +24,7 @@ class CountryGuideTest extends TestCase
         ]);
     }
 
-    public function test_guide_composition_returns_uganda_sections_in_type_order(): void
+    public function test_guide_composition_returns_uganda_essentials_in_type_order(): void
     {
         $this->seedGuide();
 
@@ -36,44 +32,45 @@ class CountryGuideTest extends TestCase
 
         $response->assertOk()
             ->assertJsonPath('data.country_code', 'UG')
-            ->assertJsonPath('data.essentials.0.code', 'CAPITAL')
-            ->assertJsonPath('data.essentials.0.value_text', 'Kampala')
-            ->assertJsonPath('data.travel_guide.0.code', 'ENTRY_VISAS')
-            ->assertJsonPath('data.travel_guide.0.description', 'Long-form guidance on entry requirements, visas and related visitor considerations.')
-            ->assertJsonPath('data.travel_guide.1.code', 'ARRIVAL')
-            ->assertJsonPath('data.travel_guide.9.code', 'WHAT_TO_PACK')
-            ->assertJsonPath('data.travel_information.0.code', 'EXCHANGE_RATE')
-            ->assertJsonPath('data.regions.0.code', 'UG-CENTRAL');
+            ->assertJsonPath('data.essentials.0.code', 'ABOUT')
+            ->assertJsonPath('data.essentials.0.value_data.heading', 'About Uganda')
+            ->assertJsonPath('data.essentials.1.code', 'HISTORY');
 
-        $this->assertGreaterThanOrEqual(4, count($response->json('data.regions')));
-        $this->assertCount(10, $response->json('data.travel_guide'));
-        $this->assertNotNull($response->json('data.travel_guide.0.description'));
+        $codes = collect($response->json('data.essentials'))->pluck('code')->all();
+        $this->assertContains('CULTURE_TRADITIONS', $codes);
+        $this->assertContains('LOCAL_ETIQUETTE', $codes);
+        $this->assertContains('CAPITAL', $codes);
+        $this->assertSame('Kampala', collect($response->json('data.essentials'))->firstWhere('code', 'CAPITAL')['value_text']);
+
+        $payload = $response->json('data');
+        $this->assertArrayNotHasKey('travel_guide', $payload);
+        $this->assertArrayNotHasKey('travel_information', $payload);
+        $this->assertArrayNotHasKey('regions', $payload);
+
+        $this->assertGreaterThanOrEqual(20, count($response->json('data.essentials')));
     }
 
-    public function test_guide_section_endpoints_return_live_content(): void
+    public function test_essentials_endpoint_returns_live_content(): void
     {
         $this->seedGuide();
 
-        $this->getJson('/api/v1/guide/UG/essentials')
-            ->assertOk()
-            ->assertJsonPath('data.0.code', 'CAPITAL');
+        $response = $this->getJson('/api/v1/guide/UG/essentials');
 
-        $this->getJson('/api/v1/guide/UG/travel-guide')
-            ->assertOk()
-            ->assertJsonPath('data.0.code', 'ENTRY_VISAS');
+        $response->assertOk()
+            ->assertJsonPath('data.0.code', 'ABOUT')
+            ->assertJsonPath('data.0.value_data.heading', 'About Uganda')
+            ->assertJsonPath('data.1.code', 'HISTORY')
+            ->assertJsonPath('data.1.value_data.heading', 'History of Uganda')
+            ->assertJsonPath('data.2.code', 'CULTURE_TRADITIONS');
 
-        $this->getJson('/api/v1/guide/UG/travel-information')
-            ->assertOk()
-            ->assertJsonPath('data.0.code', 'EXCHANGE_RATE');
+        $codes = collect($response->json('data'))->pluck('code')->all();
+        $this->assertContains('FOOD_DRINK_SOCIAL', $codes);
+        $this->assertContains('CAPITAL', $codes);
 
-        $this->getJson('/api/v1/guide/UG/regions')
-            ->assertOk()
-            ->assertJsonFragment(['code' => 'UG-WEST']);
-
-        $this->getJson('/api/v1/guide/UG/regions/UG-EAST')
-            ->assertOk()
-            ->assertJsonPath('data.code', 'UG-EAST')
-            ->assertJsonPath('data.title', 'East');
+        $aboutParagraphs = $response->json('data.0.value_data.paragraphs');
+        $this->assertIsArray($aboutParagraphs);
+        $this->assertNotEmpty($aboutParagraphs);
+        $this->assertStringStartsWith('Uganda sits in the heart of East Africa', $aboutParagraphs[0]);
     }
 
     public function test_guide_excludes_inactive_types_and_unpublished_values(): void
@@ -89,28 +86,13 @@ class CountryGuideTest extends TestCase
             ->where('essential_type_id', $currencyType->id)
             ->update(['is_live' => false]);
 
-        $entryTopic = TravelGuideTopic::query()->where('code', 'ENTRY_VISAS')->firstOrFail();
-        CountryTravelGuide::query()
-            ->where('country_code', 'UG')
-            ->where('topic_id', $entryTopic->id)
-            ->update(['is_live' => false]);
-
-        $central = GeographicArea::query()->where('code', 'UG-CENTRAL')->firstOrFail();
-        CountryRegionGuide::query()
-            ->where('geographic_area_id', $central->id)
-            ->update(['is_live' => false]);
-
         $response = $this->getJson('/api/v1/guide/UG');
 
         $response->assertOk();
         $essentialCodes = collect($response->json('data.essentials'))->pluck('code')->all();
-        $travelCodes = collect($response->json('data.travel_guide'))->pluck('code')->all();
-        $regionCodes = collect($response->json('data.regions'))->pluck('code')->all();
 
         $this->assertNotContains('CAPITAL', $essentialCodes);
         $this->assertNotContains('CURRENCY', $essentialCodes);
-        $this->assertNotContains('ENTRY_VISAS', $travelCodes);
-        $this->assertNotContains('UG-CENTRAL', $regionCodes);
         $this->assertContains('LANGUAGES', $essentialCodes);
     }
 
@@ -120,7 +102,6 @@ class CountryGuideTest extends TestCase
 
         $this->getJson('/api/v1/guide/XX')->assertNotFound();
         $this->getJson('/api/v1/guide/uganda')->assertNotFound();
-        $this->getJson('/api/v1/guide/UG/regions/MISSING')->assertNotFound();
     }
 
     public function test_admin_can_create_and_update_essential_value(): void
@@ -133,7 +114,7 @@ class CountryGuideTest extends TestCase
         $type = CountryGuideEssentialType::query()->create([
             'code' => 'POPULATION',
             'name' => 'Population',
-            'sort_order' => 110,
+            'sort_order' => 200,
             'is_active' => true,
         ]);
 
@@ -169,5 +150,14 @@ class CountryGuideTest extends TestCase
             'code' => 'TEST',
             'name' => 'Test',
         ])->assertUnauthorized();
+    }
+
+    public function test_retired_travel_and_region_endpoints_are_gone(): void
+    {
+        $this->seedGuide();
+
+        $this->getJson('/api/v1/guide/UG/travel-guide')->assertNotFound();
+        $this->getJson('/api/v1/guide/UG/travel-information')->assertNotFound();
+        $this->getJson('/api/v1/guide/UG/regions')->assertNotFound();
     }
 }

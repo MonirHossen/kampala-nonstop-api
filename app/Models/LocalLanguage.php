@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\HasUuidPrimaryKey;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class TravelInformationType extends Model
+class LocalLanguage extends Model
 {
-    use HasUuidPrimaryKey;
+    protected $primaryKey = 'code';
+
+    protected $keyType = 'string';
+
+    public $incrementing = false;
 
     /**
      * @var list<string>
@@ -17,8 +20,7 @@ class TravelInformationType extends Model
     protected $fillable = [
         'code',
         'name',
-        'description',
-        'sort_order',
+        'native_name',
         'is_active',
     ];
 
@@ -28,7 +30,6 @@ class TravelInformationType extends Model
     protected function casts(): array
     {
         return [
-            'sort_order' => 'integer',
             'is_active' => 'boolean',
         ];
     }
@@ -43,10 +44,10 @@ class TravelInformationType extends Model
     }
 
     /**
-     * @return HasMany<CountryTravelInformation, $this>
+     * @return HasMany<LocalKnowledge, $this>
      */
-    public function values(): HasMany
+    public function localKnowledge(): HasMany
     {
-        return $this->hasMany(CountryTravelInformation::class, 'info_type_id');
+        return $this->hasMany(LocalKnowledge::class, 'local_language_code', 'code');
     }
 }

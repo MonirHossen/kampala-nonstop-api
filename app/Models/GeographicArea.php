@@ -68,10 +68,10 @@ class GeographicArea extends Model
     }
 
     /**
-     * @return HasMany<CountryRegionGuide, $this>
+     * @return HasMany<LocalKnowledge, $this>
      */
-    public function regionGuides(): HasMany
+    public function localKnowledge(): HasMany
     {
-        return $this->hasMany(CountryRegionGuide::class);
+        return $this->hasMany(LocalKnowledge::class, 'geographic_area_id');
     }
 }

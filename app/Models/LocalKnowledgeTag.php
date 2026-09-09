@@ -5,9 +5,9 @@ namespace App\Models;
 use App\Models\Concerns\HasUuidPrimaryKey;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class TravelGuideTopic extends Model
+class LocalKnowledgeTag extends Model
 {
     use HasUuidPrimaryKey;
 
@@ -18,7 +18,6 @@ class TravelGuideTopic extends Model
         'code',
         'name',
         'description',
-        'sort_order',
         'is_active',
     ];
 
@@ -28,7 +27,6 @@ class TravelGuideTopic extends Model
     protected function casts(): array
     {
         return [
-            'sort_order' => 'integer',
             'is_active' => 'boolean',
         ];
     }
@@ -43,10 +41,15 @@ class TravelGuideTopic extends Model
     }
 
     /**
-     * @return HasMany<CountryTravelGuide, $this>
+     * @return BelongsToMany<LocalKnowledge, $this>
      */
-    public function guides(): HasMany
+    public function items(): BelongsToMany
     {
-        return $this->hasMany(CountryTravelGuide::class, 'topic_id');
+        return $this->belongsToMany(
+            LocalKnowledge::class,
+            'local_knowledge_tag_links',
+            'tag_id',
+            'local_knowledge_id'
+        );
     }
 }

@@ -29,42 +29,6 @@ class GuideController extends Controller
         ]);
     }
 
-    public function travelGuide(string $countryCode): JsonResponse
-    {
-        $this->assertValidCountryCode($countryCode);
-
-        return response()->json([
-            'data' => $this->guideService->travelGuide($countryCode),
-        ]);
-    }
-
-    public function travelInformation(string $countryCode): JsonResponse
-    {
-        $this->assertValidCountryCode($countryCode);
-
-        return response()->json([
-            'data' => $this->guideService->travelInformation($countryCode),
-        ]);
-    }
-
-    public function regions(string $countryCode): JsonResponse
-    {
-        $this->assertValidCountryCode($countryCode);
-
-        return response()->json([
-            'data' => $this->guideService->regions($countryCode),
-        ]);
-    }
-
-    public function region(string $countryCode, string $areaCode): JsonResponse
-    {
-        $this->assertValidCountryCode($countryCode);
-
-        return response()->json([
-            'data' => $this->guideService->region($countryCode, $areaCode),
-        ]);
-    }
-
     private function assertValidCountryCode(string $countryCode): void
     {
         $normalised = $this->guideService->normaliseCountryCode($countryCode);

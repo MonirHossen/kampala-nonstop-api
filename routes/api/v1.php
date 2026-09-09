@@ -8,13 +8,14 @@ use App\Http\Controllers\Api\DeployController;
 use App\Http\Controllers\Api\Guide\Admin\EssentialTypeController as AdminEssentialTypeController;
 use App\Http\Controllers\Api\Guide\Admin\EssentialValueController as AdminEssentialValueController;
 use App\Http\Controllers\Api\Guide\Admin\GeographicAreaController as AdminGeographicAreaController;
-use App\Http\Controllers\Api\Guide\Admin\RegionGuideController as AdminRegionGuideController;
-use App\Http\Controllers\Api\Guide\Admin\TravelGuideController as AdminTravelGuideController;
-use App\Http\Controllers\Api\Guide\Admin\TravelGuideTopicController as AdminTravelGuideTopicController;
-use App\Http\Controllers\Api\Guide\Admin\TravelInformationController as AdminTravelInformationController;
-use App\Http\Controllers\Api\Guide\Admin\TravelInformationTypeController as AdminTravelInformationTypeController;
 use App\Http\Controllers\Api\Guide\GuideController;
 use App\Http\Controllers\Api\InterestTypeController;
+use App\Http\Controllers\Api\LocalKnowledge\Admin\LocalKnowledgeItemController as AdminLocalKnowledgeItemController;
+use App\Http\Controllers\Api\LocalKnowledge\Admin\LocalKnowledgeTagController as AdminLocalKnowledgeTagController;
+use App\Http\Controllers\Api\LocalKnowledge\Admin\LocalKnowledgeTypeController as AdminLocalKnowledgeTypeController;
+use App\Http\Controllers\Api\LocalKnowledge\Admin\LocalLanguageController as AdminLocalLanguageController;
+use App\Http\Controllers\Api\LocalKnowledge\Admin\PageContextController as AdminPageContextController;
+use App\Http\Controllers\Api\LocalKnowledge\LocalKnowledgeController;
 use App\Http\Controllers\Api\User\CitizenshipController;
 use App\Http\Controllers\Api\User\ConsentController;
 use App\Http\Controllers\Api\User\FavouriteController;
@@ -168,29 +169,38 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::post('/essential-values', [AdminEssentialValueController::class, 'store']);
         Route::put('/essential-values/{essentialValue}', [AdminEssentialValueController::class, 'update']);
         Route::delete('/essential-values/{essentialValue}', [AdminEssentialValueController::class, 'destroy']);
+    });
 
-        Route::get('/travel-guide-topics', [AdminTravelGuideTopicController::class, 'index']);
-        Route::post('/travel-guide-topics', [AdminTravelGuideTopicController::class, 'store']);
-        Route::put('/travel-guide-topics/{topic}', [AdminTravelGuideTopicController::class, 'update']);
+    /*
+    |--------------------------------------------------------------------------
+    | Local Knowledge — admin
+    |--------------------------------------------------------------------------
+    |
+    | Authenticated for now. Admin/concierge role middleware remains TODO.
+    |
+    */
+    Route::prefix('local-knowledge')->group(function () {
+        Route::get('/types', [AdminLocalKnowledgeTypeController::class, 'index']);
+        Route::post('/types', [AdminLocalKnowledgeTypeController::class, 'store']);
+        Route::put('/types/{knowledgeType}', [AdminLocalKnowledgeTypeController::class, 'update']);
 
-        Route::get('/travel-guides', [AdminTravelGuideController::class, 'index']);
-        Route::post('/travel-guides', [AdminTravelGuideController::class, 'store']);
-        Route::put('/travel-guides/{travelGuide}', [AdminTravelGuideController::class, 'update']);
-        Route::delete('/travel-guides/{travelGuide}', [AdminTravelGuideController::class, 'destroy']);
+        Route::get('/tags', [AdminLocalKnowledgeTagController::class, 'index']);
+        Route::post('/tags', [AdminLocalKnowledgeTagController::class, 'store']);
+        Route::put('/tags/{tag}', [AdminLocalKnowledgeTagController::class, 'update']);
 
-        Route::get('/travel-information-types', [AdminTravelInformationTypeController::class, 'index']);
-        Route::post('/travel-information-types', [AdminTravelInformationTypeController::class, 'store']);
-        Route::put('/travel-information-types/{infoType}', [AdminTravelInformationTypeController::class, 'update']);
+        Route::get('/page-contexts', [AdminPageContextController::class, 'index']);
+        Route::post('/page-contexts', [AdminPageContextController::class, 'store']);
+        Route::put('/page-contexts/{pageContext}', [AdminPageContextController::class, 'update']);
 
-        Route::get('/travel-information', [AdminTravelInformationController::class, 'index']);
-        Route::post('/travel-information', [AdminTravelInformationController::class, 'store']);
-        Route::put('/travel-information/{travelInformation}', [AdminTravelInformationController::class, 'update']);
-        Route::delete('/travel-information/{travelInformation}', [AdminTravelInformationController::class, 'destroy']);
+        Route::get('/languages', [AdminLocalLanguageController::class, 'index']);
+        Route::post('/languages', [AdminLocalLanguageController::class, 'store']);
+        Route::put('/languages/{language}', [AdminLocalLanguageController::class, 'update']);
 
-        Route::get('/region-guides', [AdminRegionGuideController::class, 'index']);
-        Route::post('/region-guides', [AdminRegionGuideController::class, 'store']);
-        Route::put('/region-guides/{regionGuide}', [AdminRegionGuideController::class, 'update']);
-        Route::delete('/region-guides/{regionGuide}', [AdminRegionGuideController::class, 'destroy']);
+        Route::get('/items', [AdminLocalKnowledgeItemController::class, 'index']);
+        Route::post('/items', [AdminLocalKnowledgeItemController::class, 'store']);
+        Route::get('/items/{localKnowledge}', [AdminLocalKnowledgeItemController::class, 'show']);
+        Route::put('/items/{localKnowledge}', [AdminLocalKnowledgeItemController::class, 'update']);
+        Route::delete('/items/{localKnowledge}', [AdminLocalKnowledgeItemController::class, 'destroy']);
     });
 });
 
@@ -203,8 +213,14 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 Route::prefix('guide')->group(function () {
     Route::get('/{countryCode}', [GuideController::class, 'show']);
     Route::get('/{countryCode}/essentials', [GuideController::class, 'essentials']);
-    Route::get('/{countryCode}/travel-guide', [GuideController::class, 'travelGuide']);
-    Route::get('/{countryCode}/travel-information', [GuideController::class, 'travelInformation']);
-    Route::get('/{countryCode}/regions', [GuideController::class, 'regions']);
-    Route::get('/{countryCode}/regions/{areaCode}', [GuideController::class, 'region']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Local Knowledge — public
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('local-knowledge')->group(function () {
+    Route::get('/random', [LocalKnowledgeController::class, 'random']);
 });
