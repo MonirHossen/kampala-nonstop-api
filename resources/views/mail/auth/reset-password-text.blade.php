@@ -8,7 +8,7 @@ This password reset link will expire in {{ $expire }} minutes.
 If you did not request a password reset, no further action is required.
 
 Reset Password:
-{{ $url }}
+{!! $url !!}
 
 Warm regards,
 The Kampala Nonstop team
