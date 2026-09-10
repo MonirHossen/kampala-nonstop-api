@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\User\ProfileController;
 use App\Http\Controllers\Api\WaitlistController;
 use App\Http\Controllers\Api\WaitlistInvitationController;
 use App\Http\Controllers\Api\WaitlistUnsubscribeController;
+use App\Http\Controllers\Api\WeatherController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -202,6 +203,16 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::put('/items/{localKnowledge}', [AdminLocalKnowledgeItemController::class, 'update']);
         Route::delete('/items/{localKnowledge}', [AdminLocalKnowledgeItemController::class, 'destroy']);
     });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Weather — public
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('weather')->group(function () {
+    Route::get('/kampala', [WeatherController::class, 'kampala']);
 });
 
 /*

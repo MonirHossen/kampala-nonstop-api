@@ -49,4 +49,13 @@ return [
         'app_secret' => env('FACEBOOK_APP_SECRET', env('FACEBOOK_CLIENT_SECRET')),
     ],
 
+    'open_meteo' => [
+        'base_url' => env('OPEN_METEO_BASE_URL', 'https://api.open-meteo.com/v1/forecast'),
+        'kampala' => [
+            'latitude' => (float) env('OPEN_METEO_KAMPALA_LAT', 0.3476),
+            'longitude' => (float) env('OPEN_METEO_KAMPALA_LNG', 32.5825),
+        ],
+        'cache_seconds' => (int) env('OPEN_METEO_CACHE_SECONDS', 900),
+    ],
+
 ];
