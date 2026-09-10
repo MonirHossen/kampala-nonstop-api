@@ -28,6 +28,7 @@ class GeographicAreaController extends Controller
     public function types(): JsonResponse
     {
         $types = GeographicAreaType::query()
+            ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
 

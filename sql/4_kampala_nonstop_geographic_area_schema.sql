@@ -1,9 +1,12 @@
 -- ============================================================================
+-- DEPRECATED — do not use as the current geography schema.
+-- Canonical geography schema: 6_kampala_nonstop_geography_tables_schema.sql
+-- Canonical geography seed:   6_1_kampala_nonstop_geography_tables_data.sql
+-- Laravel source of truth:    database/migrations/2026_09_08_000001_create_geographic_area_tables.php
+-- ============================================================================
 -- Kampala Nonstop / Africa Nonstop
--- Geographic Areas — Schema
+-- Geographic Areas — Schema (legacy mirror; superseded)
 -- PostgreSQL 18+
--- Mirrors Laravel migration:
---   2026_09_08_000001_create_geographic_area_tables
 -- ============================================================================
 
 BEGIN;

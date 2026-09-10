@@ -14,6 +14,10 @@ class UpdateGeographicAreaRequest extends GuideFormRequest
     {
         /** @var GeographicArea $geographicArea */
         $geographicArea = $this->route('geographicArea');
+        $countryCode = strtoupper((string) $this->input(
+            'country_code',
+            $geographicArea->country_code
+        ));
 
         return [
             'parent_geographic_area_id' => ['nullable', 'uuid', 'exists:geographic_areas,id'],
@@ -24,7 +28,9 @@ class UpdateGeographicAreaRequest extends GuideFormRequest
                 'string',
                 'max:50',
                 'regex:/^[A-Z0-9_-]+$/',
-                Rule::unique('geographic_areas', 'code')->ignore($geographicArea->id),
+                Rule::unique('geographic_areas', 'code')
+                    ->where(fn ($query) => $query->where('country_code', $countryCode))
+                    ->ignore($geographicArea->id),
             ],
             'name' => ['sometimes', 'string', 'max:255'],
             'is_live' => ['sometimes', 'boolean'],

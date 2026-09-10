@@ -1,6 +1,11 @@
 -- ============================================================================
+-- DEPRECATED — do not use as the current geography seed.
+-- Canonical geography schema: 6_kampala_nonstop_geography_tables_schema.sql
+-- Canonical geography seed:   6_1_kampala_nonstop_geography_tables_data.sql
+-- Laravel seeder:             database/seeders/GeographicAreaSeeder.php
+-- ============================================================================
 -- Kampala Nonstop / Africa Nonstop
--- Geographic Areas — Uganda seed data
+-- Geographic Areas — Uganda seed data (legacy; superseded)
 -- PostgreSQL 18+
 -- Idempotent: ON CONFLICT updates name / parent / live flags.
 -- ============================================================================

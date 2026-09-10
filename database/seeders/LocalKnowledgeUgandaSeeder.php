@@ -10,7 +10,9 @@ use App\Models\PageContext;
 use Illuminate\Database\Seeder;
 
 /**
- * Uganda Local Knowledge sample content for the public random popup.
+ * @deprecated Use LocalKnowledgeV0Seeder (sql/4_2_kampala_nonstop_local_knowledge_v0.sql).
+ * Uganda Local Knowledge sample content — superseded by spreadsheet V0.
+ * Kept for reference only; not called from DatabaseSeeder.
  *
  * Idempotent: matches on country_code + title.
  */

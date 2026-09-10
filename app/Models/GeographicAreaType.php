@@ -18,7 +18,8 @@ class GeographicAreaType extends Model
         'code',
         'name',
         'description',
-        'is_active',
+        'sort_order',
+        'is_live',
     ];
 
     /**
@@ -27,7 +28,8 @@ class GeographicAreaType extends Model
     protected function casts(): array
     {
         return [
-            'is_active' => 'boolean',
+            'sort_order' => 'integer',
+            'is_live' => 'boolean',
         ];
     }
 
@@ -35,9 +37,9 @@ class GeographicAreaType extends Model
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
-    public function scopeActive(Builder $query): Builder
+    public function scopeLive(Builder $query): Builder
     {
-        return $query->where('is_active', true);
+        return $query->where('is_live', true);
     }
 
     /**

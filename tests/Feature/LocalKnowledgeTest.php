@@ -10,7 +10,7 @@ use App\Models\PageContext;
 use App\Models\User;
 use Database\Seeders\GeographicAreaSeeder;
 use Database\Seeders\LocalKnowledgeReferenceSeeder;
-use Database\Seeders\LocalKnowledgeUgandaSeeder;
+use Database\Seeders\LocalKnowledgeV0Seeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -23,7 +23,7 @@ class LocalKnowledgeTest extends TestCase
         $this->seed([
             GeographicAreaSeeder::class,
             LocalKnowledgeReferenceSeeder::class,
-            LocalKnowledgeUgandaSeeder::class,
+            LocalKnowledgeV0Seeder::class,
         ]);
     }
 
@@ -137,8 +137,8 @@ class LocalKnowledgeTest extends TestCase
         ]);
 
         $typeId = LocalKnowledgeType::query()->where('code', 'INSIDER_TIP')->value('id');
-        $centralId = GeographicArea::query()->where('code', 'UG-CENTRAL')->value('id');
-        $westId = GeographicArea::query()->where('code', 'UG-WEST')->value('id');
+        $centralId = GeographicArea::query()->where('code', 'CENTRAL')->value('id');
+        $westId = GeographicArea::query()->where('code', 'WEST')->value('id');
 
         LocalKnowledge::query()->create([
             'local_knowledge_type_id' => $typeId,
@@ -158,7 +158,7 @@ class LocalKnowledgeTest extends TestCase
             'is_live' => true,
         ]);
 
-        $kampala = $this->getJson('/api/v1/local-knowledge/random?country_code=UG&geographic_area_code=UG-KAMPALA&limit=10');
+        $kampala = $this->getJson('/api/v1/local-knowledge/random?country_code=UG&geographic_area_code=KAMPALA&limit=10');
         $titles = collect($kampala->json('data'))->pluck('title')->all();
 
         $kampala->assertOk();
@@ -184,7 +184,7 @@ class LocalKnowledgeTest extends TestCase
             'is_live' => true,
         ]);
 
-        $this->getJson('/api/v1/local-knowledge/random?country_code=UG&geographic_area_code=UG-KAMPALA')
+        $this->getJson('/api/v1/local-knowledge/random?country_code=UG&geographic_area_code=KAMPALA')
             ->assertOk()
             ->assertJsonPath('data.0.title', 'Nationwide tip');
     }
@@ -196,10 +196,18 @@ class LocalKnowledgeTest extends TestCase
         $ids = LocalKnowledge::query()
             ->live()
             ->where('country_code', 'UG')
+            ->limit(2)
             ->pluck('id');
 
-        $keep = $ids->last();
-        $exclude = $ids->reject(fn (string $id): bool => $id === $keep)->implode(',');
+        $this->assertCount(2, $ids);
+
+        $keep = $ids->first();
+        $exclude = $ids->last();
+
+        LocalKnowledge::query()
+            ->where('country_code', 'UG')
+            ->whereNotIn('id', [$keep, $exclude])
+            ->update(['is_live' => false]);
 
         $response = $this->getJson(
             '/api/v1/local-knowledge/random?country_code=UG&limit=10&exclude_ids='.urlencode($exclude)
@@ -209,6 +217,7 @@ class LocalKnowledgeTest extends TestCase
         $returned = collect($response->json('data'))->pluck('id')->all();
 
         $this->assertContains($keep, $returned);
+        $this->assertNotContains($exclude, $returned);
         $this->assertCount(1, $returned);
     }
 

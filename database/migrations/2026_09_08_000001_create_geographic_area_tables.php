@@ -30,7 +30,8 @@ return new class extends Migration
             $table->string('code', 50)->unique();
             $table->string('name', 100);
             $table->text('description')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->integer('sort_order')->default(0);
+            $table->boolean('is_live')->default(true);
             $table->timestampTz('created_at')->useCurrent();
             $table->timestampTz('updated_at')->useCurrent();
         });
@@ -53,39 +54,50 @@ return new class extends Migration
             $table->uuid('parent_geographic_area_id')->nullable();
             $table->uuid('geographic_area_type_id');
             $table->char('country_code', 2);
-            $table->string('code', 50)->unique();
+            $table->string('code', 50);
             $table->string('name', 255);
             $table->boolean('is_live')->default(true);
             $table->timestampTz('created_at')->useCurrent();
             $table->timestampTz('updated_at')->useCurrent();
 
-            $table->index('parent_geographic_area_id', 'idx_geographic_areas_parent');
-            $table->index('geographic_area_type_id', 'idx_geographic_areas_type');
-            $table->index('country_code', 'idx_geographic_areas_country');
+            $table->unique(['country_code', 'code'], 'geographic_areas_country_code_code_key');
+            $table->unique(['id', 'country_code'], 'geographic_areas_id_country_code_key');
+            $table->index(['parent_geographic_area_id', 'country_code'], 'geographic_areas_parent_idx');
+            $table->index('geographic_area_type_id', 'geographic_areas_type_idx');
         });
 
         Schema::table('geographic_areas', function (Blueprint $table) {
-            $table->foreign('parent_geographic_area_id', 'fk_geographic_areas_parent')
-                ->references('id')
-                ->on('geographic_areas')
-                ->nullOnDelete();
-
-            $table->foreign('geographic_area_type_id', 'fk_geographic_areas_type')
+            $table->foreign('geographic_area_type_id', 'geographic_areas_type_fk')
                 ->references('id')
                 ->on('geographic_area_types')
+                ->restrictOnUpdate()
                 ->restrictOnDelete();
         });
+
+        DB::statement(
+            'ALTER TABLE geographic_areas
+             ADD CONSTRAINT geographic_areas_parent_fk
+             FOREIGN KEY (parent_geographic_area_id, country_code)
+             REFERENCES geographic_areas (id, country_code)
+             ON UPDATE RESTRICT ON DELETE RESTRICT'
+        );
+
+        DB::statement(
+            "ALTER TABLE geographic_areas
+             ADD CONSTRAINT geographic_areas_country_code_format
+             CHECK (country_code ~ '^[A-Z]{2}$')"
+        );
+
+        DB::statement(
+            'ALTER TABLE geographic_areas
+             ADD CONSTRAINT geographic_areas_not_own_parent
+             CHECK (parent_geographic_area_id IS DISTINCT FROM id)'
+        );
 
         DB::statement(
             "ALTER TABLE geographic_areas
              ADD CONSTRAINT chk_geographic_areas_code
              CHECK (code ~ '^[A-Z0-9_-]+$')"
-        );
-
-        DB::statement(
-            "ALTER TABLE geographic_areas
-             ADD CONSTRAINT chk_geographic_areas_country_code
-             CHECK (country_code ~ '^[A-Z]{2}$')"
         );
     }
 };
