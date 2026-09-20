@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\AcquisitionSource;
 use App\Models\InterestType;
+use App\Models\User;
 use App\Models\WaitlistSignup;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class WaitlistSignupTest extends TestCase
@@ -268,6 +270,8 @@ class WaitlistSignupTest extends TestCase
 
     public function test_admin_index_filters_by_acquisition_source_code_and_unsubscribed_status(): void
     {
+        Sanctum::actingAs(User::factory()->create());
+
         WaitlistSignup::factory()->count(2)->create(['acquisition_source_id' => $this->instagram->id]);
         WaitlistSignup::factory()->create(['acquisition_source_id' => $this->referral->id]);
         WaitlistSignup::factory()->unsubscribed()->create(['acquisition_source_id' => $this->instagram->id]);
@@ -295,6 +299,8 @@ class WaitlistSignupTest extends TestCase
 
     public function test_admin_index_filters_by_interest_code_and_country_code(): void
     {
+        Sanctum::actingAs(User::factory()->create());
+
         $withNightlife = WaitlistSignup::factory()->create(['country_code' => 'UG']);
         $withNightlife->interestTypes()->sync([$this->nightlife->id]);
 
@@ -314,6 +320,8 @@ class WaitlistSignupTest extends TestCase
 
     public function test_csv_export_returns_expected_headers_and_rows_for_a_filtered_set(): void
     {
+        Sanctum::actingAs(User::factory()->create());
+
         $included = WaitlistSignup::factory()->create([
             'acquisition_source_id' => $this->instagram->id,
             'email' => 'included@example.com',

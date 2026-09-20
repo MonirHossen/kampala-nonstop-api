@@ -14,7 +14,6 @@
     <p style="margin:0 0 16px;">
         <strong>{{ $inviterName }}</strong> thought you would enjoy discovering Uganda through
         <strong>Kampala Nonstop</strong> — Kampala Nonstop is the first destination of our Africa Nonstop platform to help travellers better experience the continent. We are launching with Uganda around Nyenge Nyenge (Jinja) in November, and want to use the Nyenge World Belgium as a mailing list registration campaign.
-
     </p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 22px;background:#fff7ed;border:1px solid #ffedd5;border-radius:12px;">
@@ -28,19 +27,8 @@
         </tr>
     </table>
 
-    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px;">
-        <tr>
-            <td align="center" style="border-radius:8px;background:#f97316;">
-                <a href="{{ $joinUrl }}"
-                   style="display:inline-block;padding:14px 28px;font-size:14px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
-                    Join Early Access
-                </a>
-            </td>
-        </tr>
-    </table>
-
-    <p style="margin:18px 0 0;font-size:13px;line-height:1.5;color:#a8a29e;">
-        If the button does not work, copy and paste this link into your browser:<br>
-        <a href="{{ $joinUrl }}" style="color:#ea580c;word-break:break-all;">{{ $joinUrl }}</a>
-    </p>
+    @include('mail.partials.button', [
+        'url' => $joinUrl,
+        'label' => 'Join Early Access',
+    ])
 @endsection

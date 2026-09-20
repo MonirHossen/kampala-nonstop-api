@@ -17,3 +17,4 @@ Know someone who would love Kampala Nonstop? Share the early access:
 Warm regards,
 The Kampala Nonstop team
 
+© {{ date('Y') }} Kampala Nonstop. All rights reserved.

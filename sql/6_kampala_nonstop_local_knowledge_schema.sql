@@ -1,6 +1,8 @@
 -- Kampala Nonstop / Africa Nonstop
 -- Local Knowledge schema
 -- PostgreSQL
+-- Mirrors Laravel migration:
+--   2026_09_09_000003_create_local_knowledge_tables
 --
 -- Dependency:
 --   public.geographic_areas(id UUID) must already exist.

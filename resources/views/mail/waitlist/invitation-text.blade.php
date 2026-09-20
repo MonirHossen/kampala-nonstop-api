@@ -13,10 +13,3 @@ Warm regards,
 The Kampala Nonstop team
 
 © {{ date('Y') }} Kampala Nonstop. All rights reserved.
-
-    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px;">
-        <tr>
-            <td align="center" style="border-radius:8px;background:#f97316;">
-                <a href="{{ $joinUrl }}"
-                   style="display:inline-block;padding:14px 28px;font-size:14px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
-                    
