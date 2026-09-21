@@ -16,6 +16,10 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthService
 {
+    public function __construct(
+        private readonly WaitlistProfileHydrator $waitlistProfileHydrator,
+    ) {}
+
     /**
      * @param  array{
      *     first_name: string,
@@ -70,6 +74,9 @@ class AuthService
                 'is_granted' => $marketingGranted,
                 'granted_at' => $marketingGranted ? $now : null,
             ]);
+
+            $user->load(['profile', 'consents']);
+            $this->waitlistProfileHydrator->hydrate($user);
 
             return $user;
         });

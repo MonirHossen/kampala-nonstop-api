@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AcquisitionSourceController;
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\CurrencyController;
 use App\Http\Controllers\Api\Auth\PasswordController;
 use App\Http\Controllers\Api\Auth\SocialiteAuthController;
 use App\Http\Controllers\Api\DeployController;
@@ -134,6 +135,7 @@ Route::get('/waitlist/unsubscribe/{signup}', [WaitlistUnsubscribeController::cla
 Route::post('/waitlist/invitations', [WaitlistInvitationController::class, 'store']);
 Route::get('/interest-types', [InterestTypeController::class, 'index']);
 Route::get('/acquisition-sources', [AcquisitionSourceController::class, 'index']);
+Route::get('/currencies', [CurrencyController::class, 'index']);
 
 /*
 |--------------------------------------------------------------------------

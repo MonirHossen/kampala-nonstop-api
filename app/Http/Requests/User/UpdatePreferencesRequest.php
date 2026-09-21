@@ -47,7 +47,14 @@ class UpdatePreferencesRequest extends FormRequest
     {
         return [
             'preferred_language' => ['sometimes', 'required', 'string', 'max:10'],
-            'preferred_currency' => ['sometimes', 'nullable', 'string', 'size:3', 'regex:/^[A-Z]{3}$/'],
+            'preferred_currency' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'size:3',
+                'regex:/^[A-Z]{3}$/',
+                Rule::exists('currencies', 'code')->where('active', true),
+            ],
             'distance_unit' => ['sometimes', 'required', Rule::in(['km', 'mi'])],
             'temperature_unit' => ['sometimes', 'required', Rule::in(['c', 'f'])],
         ];

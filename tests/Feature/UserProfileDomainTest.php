@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Currency;
 use App\Models\User;
 use App\Models\UserConsent;
 use App\Models\UserFavourite;
@@ -13,6 +14,22 @@ use Tests\TestCase;
 class UserProfileDomainTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Currency::factory()->create([
+            'code' => 'UGX',
+            'name' => 'UGX',
+            'display_order' => 40,
+        ]);
+        Currency::factory()->create([
+            'code' => 'USD',
+            'name' => 'USD',
+            'display_order' => 20,
+        ]);
+    }
 
     private function authenticatedUser(array $registerOverrides = []): User
     {

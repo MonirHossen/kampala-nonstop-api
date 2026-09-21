@@ -9,6 +9,7 @@ use App\Http\Requests\Auth\SocialLoginRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use App\Services\SocialAuthService;
+use App\Services\WaitlistProfileHydrator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,7 @@ class AuthController extends Controller
     public function __construct(
         private readonly AuthService $authService,
         private readonly SocialAuthService $socialAuthService,
+        private readonly WaitlistProfileHydrator $waitlistProfileHydrator,
     ) {}
 
     public function register(RegisterRequest $request): JsonResponse
@@ -65,6 +67,8 @@ class AuthController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = $request->user();
+        $user->load(['profile', 'preferences', 'notificationPreferences', 'consents']);
+        $this->waitlistProfileHydrator->hydrate($user);
         $user->load(['profile', 'preferences', 'notificationPreferences', 'consents']);
 
         return response()->json([

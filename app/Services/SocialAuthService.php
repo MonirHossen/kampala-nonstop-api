@@ -18,6 +18,7 @@ class SocialAuthService
     public function __construct(
         private readonly GoogleTokenVerifier $googleTokenVerifier,
         private readonly FacebookTokenVerifier $facebookTokenVerifier,
+        private readonly WaitlistProfileHydrator $waitlistProfileHydrator,
     ) {}
 
     /**
@@ -250,6 +251,9 @@ class SocialAuthService
                 'provider_user_id' => $identity->providerUserId,
                 'avatar_url' => $identity->avatarUrl,
             ]);
+
+            $user->load(['profile', 'consents']);
+            $this->waitlistProfileHydrator->hydrate($user);
 
             return $user;
         });
