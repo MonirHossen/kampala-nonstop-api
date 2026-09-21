@@ -32,6 +32,8 @@ class WaitlistReferenceSeeder extends Seeder
             ['code' => 'DIRECT', 'name' => 'Direct', 'type' => 'direct'],
             ['code' => 'OTHER', 'name' => 'Other', 'type' => 'other'],
             ['code' => 'UNAA_DENVER_2026', 'name' => 'UNAA Denver 2026', 'type' => 'event'],
+            ['code' => 'belgium_nyege_2026', 'name' => 'Nyege World Belgium 2026', 'type' => 'event'],
+
         ];
 
         foreach ($sources as $source) {
