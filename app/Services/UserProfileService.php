@@ -10,7 +10,10 @@ use App\Models\UserNotificationPreference;
 use App\Models\UserPreference;
 use App\Models\UserProfile;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -33,6 +36,64 @@ class UserProfileService
         }
 
         return $profile->fresh();
+    }
+
+    public function updateProfilePhoto(User $user, UploadedFile $photo): UserProfile
+    {
+        $profile = $user->profile;
+
+        if ($profile === null) {
+            $profile = $user->profile()->create([
+                'first_name' => 'Unknown',
+                'last_name' => 'User',
+            ]);
+        }
+
+        $this->deleteStoredProfilePhoto($profile->profile_photo_url);
+
+        $path = $photo->storePubliclyAs(
+            'profile-photos/'.$user->id,
+            Str::uuid()->toString().'.'.$photo->guessExtension(),
+            'public',
+        );
+
+        $profile->forceFill([
+            'profile_photo_url' => Storage::disk('public')->url($path),
+        ])->save();
+
+        return $profile->fresh();
+    }
+
+    public function clearProfilePhoto(User $user): UserProfile
+    {
+        $profile = $user->profile;
+
+        if ($profile === null) {
+            throw new NotFoundHttpException('Profile not found.');
+        }
+
+        $this->deleteStoredProfilePhoto($profile->profile_photo_url);
+
+        $profile->forceFill(['profile_photo_url' => null])->save();
+
+        return $profile->fresh();
+    }
+
+    private function deleteStoredProfilePhoto(?string $url): void
+    {
+        if ($url === null || trim($url) === '') {
+            return;
+        }
+
+        $storagePath = parse_url($url, PHP_URL_PATH);
+        if (! is_string($storagePath) || ! str_contains($storagePath, '/storage/')) {
+            return;
+        }
+
+        $relativePath = ltrim(Str::after($storagePath, '/storage/'), '/');
+        if ($relativePath !== '' && Storage::disk('public')->exists($relativePath)) {
+            Storage::disk('public')->delete($relativePath);
+        }
     }
 
     /**

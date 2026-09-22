@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\UserConsent;
 use App\Models\UserFavourite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -31,6 +33,21 @@ class UserProfileDomainTest extends TestCase
         ]);
     }
 
+    private function fakeProfilePhotoUpload(): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'profile-photo-');
+        $this->assertNotFalse($path);
+
+        $png = base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+            true,
+        );
+        $this->assertNotFalse($png);
+        file_put_contents($path, $png);
+
+        return new UploadedFile($path, 'avatar.png', 'image/png', UPLOAD_ERR_OK, true);
+    }
+
     private function authenticatedUser(array $registerOverrides = []): User
     {
         $payload = array_merge([
@@ -52,6 +69,29 @@ class UserProfileDomainTest extends TestCase
     {
         $this->getJson('/api/v1/user/profile')->assertUnauthorized();
         $this->putJson('/api/v1/user/profile', ['first_name' => 'X'])->assertUnauthorized();
+    }
+
+    public function test_user_can_upload_and_remove_profile_photo(): void
+    {
+        Storage::fake('public');
+
+        $user = $this->authenticatedUser();
+        Sanctum::actingAs($user);
+
+        $upload = $this->fakeProfilePhotoUpload();
+
+        $this->postJson('/api/v1/user/profile/photo', [
+            'photo' => $upload,
+        ])
+            ->assertOk()
+            ->assertJsonPath('profile.profile_photo_url', fn (?string $url): bool => is_string($url) && $url !== '');
+
+        $photoUrl = $this->getJson('/api/v1/user/profile')->json('profile.profile_photo_url');
+        $this->assertIsString($photoUrl);
+
+        $this->deleteJson('/api/v1/user/profile/photo')
+            ->assertOk()
+            ->assertJsonPath('profile.profile_photo_url', null);
     }
 
     public function test_user_can_view_and_update_profile(): void

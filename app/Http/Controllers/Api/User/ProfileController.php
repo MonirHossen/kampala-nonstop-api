@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\UpdateProfileRequest;
+use App\Http\Requests\User\UploadProfilePhotoRequest;
 use App\Http\Resources\UserProfileResource;
 use App\Services\UserProfileService;
 use Illuminate\Http\JsonResponse;
@@ -30,6 +31,30 @@ class ProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
         $profile = $this->userProfileService->updateProfile($user, $request->validated());
+
+        return response()->json([
+            'profile' => new UserProfileResource($profile),
+        ]);
+    }
+
+    public function updatePhoto(UploadProfilePhotoRequest $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        /** @var \Illuminate\Http\UploadedFile $photo */
+        $photo = $request->file('photo');
+        $profile = $this->userProfileService->updateProfilePhoto($user, $photo);
+
+        return response()->json([
+            'profile' => new UserProfileResource($profile),
+        ]);
+    }
+
+    public function destroyPhoto(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        $profile = $this->userProfileService->clearProfilePhoto($user);
 
         return response()->json([
             'profile' => new UserProfileResource($profile),

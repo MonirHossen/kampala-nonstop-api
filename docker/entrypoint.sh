@@ -66,7 +66,12 @@ bootstrap_app() {
     if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
         echo "Running database migrations..."
         php artisan migrate --force --no-interaction
+        echo "Seeding currency catalogue..."
+        php artisan db:seed --class=CurrencySeeder --force --no-interaction
     fi
+
+    echo "Linking public storage..."
+    php artisan storage:link --force --no-interaction
 
     if [ "${APP_ENV:-local}" = "production" ]; then
         php artisan config:cache --no-interaction

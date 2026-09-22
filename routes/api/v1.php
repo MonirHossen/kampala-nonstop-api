@@ -102,6 +102,8 @@ Route::middleware('auth:sanctum')->prefix('auth')->group(function () {
 Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::put('/profile', [ProfileController::class, 'update']);
+    Route::post('/profile/photo', [ProfileController::class, 'updatePhoto']);
+    Route::delete('/profile/photo', [ProfileController::class, 'destroyPhoto']);
 
     Route::get('/preferences', [PreferenceController::class, 'show']);
     Route::put('/preferences', [PreferenceController::class, 'update']);
