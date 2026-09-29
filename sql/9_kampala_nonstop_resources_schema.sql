@@ -38,7 +38,7 @@ CREATE TABLE resource_relationship_types (
     updated_at   TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE location_types (
+CREATE TABLE place_types (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     code        VARCHAR(50) NOT NULL UNIQUE,
     name        VARCHAR(100) NOT NULL,
@@ -76,7 +76,7 @@ CREATE TABLE resources (
         )
 );
 
-CREATE TABLE locations (
+CREATE TABLE places (
     resource_id                 UUID PRIMARY KEY,
     geographic_area_id          UUID NOT NULL,
     address_line_1              VARCHAR(200),
@@ -91,25 +91,25 @@ CREATE TABLE locations (
     created_at                  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at                  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_locations_resource
+    CONSTRAINT fk_places_resource
         FOREIGN KEY (resource_id)
         REFERENCES resources (id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
-    CONSTRAINT fk_locations_geographic_area
+    CONSTRAINT fk_places_geographic_area
         FOREIGN KEY (geographic_area_id)
         REFERENCES geographic_areas (id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
 
-    CONSTRAINT chk_locations_latitude
+    CONSTRAINT chk_places_latitude
         CHECK (latitude IS NULL OR latitude BETWEEN -90 AND 90),
 
-    CONSTRAINT chk_locations_longitude
+    CONSTRAINT chk_places_longitude
         CHECK (longitude IS NULL OR longitude BETWEEN -180 AND 180),
 
-    CONSTRAINT chk_locations_coordinate_pair
+    CONSTRAINT chk_places_coordinate_pair
         CHECK (
             (latitude IS NULL AND longitude IS NULL)
             OR
@@ -184,7 +184,7 @@ CREATE TABLE vehicles (
 
 CREATE TABLE resource_units (
     resource_id               UUID PRIMARY KEY,
-    location_id               UUID NOT NULL,
+    place_id               UUID NOT NULL,
     unit_code                 VARCHAR(50),
     capacity                  INTEGER,
     is_individually_assignable BOOLEAN NOT NULL DEFAULT TRUE,
@@ -197,40 +197,40 @@ CREATE TABLE resource_units (
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
-    CONSTRAINT fk_resource_units_location
-        FOREIGN KEY (location_id)
-        REFERENCES locations (resource_id)
+    CONSTRAINT fk_resource_units_place
+        FOREIGN KEY (place_id)
+        REFERENCES places (resource_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
-    CONSTRAINT uq_resource_units_location_code
-        UNIQUE (location_id, unit_code),
+    CONSTRAINT uq_resource_units_place_code
+        UNIQUE (place_id, unit_code),
 
     CONSTRAINT chk_resource_units_capacity
         CHECK (capacity IS NULL OR capacity > 0),
 
     CONSTRAINT chk_resource_units_not_parent
-        CHECK (resource_id <> location_id)
+        CHECK (resource_id <> place_id)
 );
 
-CREATE TABLE location_type_assignments (
-    location_id      UUID NOT NULL,
-    location_type_id UUID NOT NULL,
+CREATE TABLE place_type_assignments (
+    place_id      UUID NOT NULL,
+    place_type_id UUID NOT NULL,
     created_at       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT pk_location_type_assignments
-        PRIMARY KEY (location_id, location_type_id),
+    CONSTRAINT pk_place_type_assignments
+        PRIMARY KEY (place_id, place_type_id),
 
-    CONSTRAINT fk_location_type_assignments_location
-        FOREIGN KEY (location_id)
-        REFERENCES locations (resource_id)
+    CONSTRAINT fk_place_type_assignments_place
+        FOREIGN KEY (place_id)
+        REFERENCES places (resource_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
-    CONSTRAINT fk_location_type_assignments_type
-        FOREIGN KEY (location_type_id)
-        REFERENCES location_types (id)
+    CONSTRAINT fk_place_type_assignments_type
+        FOREIGN KEY (place_type_id)
+        REFERENCES place_types (id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT
 );
@@ -541,9 +541,9 @@ CREATE TABLE resource_amenities (
         ON DELETE RESTRICT
 );
 
-CREATE TABLE location_opening_hours (
+CREATE TABLE place_opening_hours (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    location_id    UUID NOT NULL,
+    place_id    UUID NOT NULL,
     day_of_week    SMALLINT NOT NULL,
     start_time     TIME NOT NULL,
     end_time       TIME NOT NULL,
@@ -552,28 +552,28 @@ CREATE TABLE location_opening_hours (
     created_at     TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at     TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_location_opening_hours_location
-        FOREIGN KEY (location_id)
-        REFERENCES locations (resource_id)
+    CONSTRAINT fk_place_opening_hours_place
+        FOREIGN KEY (place_id)
+        REFERENCES places (resource_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
-    CONSTRAINT chk_location_opening_hours_day
+    CONSTRAINT chk_place_opening_hours_day
         CHECK (day_of_week BETWEEN 0 AND 6),
 
-    CONSTRAINT chk_location_opening_hours_offset
+    CONSTRAINT chk_place_opening_hours_offset
         CHECK (end_day_offset IN (0, 1)),
 
-    CONSTRAINT chk_location_opening_hours_window
+    CONSTRAINT chk_place_opening_hours_window
         CHECK (
             (end_day_offset = 0 AND end_time > start_time)
             OR end_day_offset = 1
         )
 );
 
-CREATE TABLE location_hours_exceptions (
+CREATE TABLE place_hours_exceptions (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    location_id    UUID NOT NULL,
+    place_id    UUID NOT NULL,
     exception_date DATE NOT NULL,
     is_closed      BOOLEAN NOT NULL DEFAULT TRUE,
     start_time     TIME,
@@ -583,16 +583,16 @@ CREATE TABLE location_hours_exceptions (
     created_at     TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at     TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_location_hours_exceptions_location
-        FOREIGN KEY (location_id)
-        REFERENCES locations (resource_id)
+    CONSTRAINT fk_place_hours_exceptions_place
+        FOREIGN KEY (place_id)
+        REFERENCES places (resource_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
-    CONSTRAINT chk_location_hours_exceptions_offset
+    CONSTRAINT chk_place_hours_exceptions_offset
         CHECK (end_day_offset IN (0, 1)),
 
-    CONSTRAINT chk_location_hours_exceptions_times
+    CONSTRAINT chk_place_hours_exceptions_times
         CHECK (
             (is_closed = TRUE AND start_time IS NULL AND end_time IS NULL)
             OR
@@ -603,7 +603,7 @@ CREATE TABLE location_hours_exceptions (
             )
         ),
 
-    CONSTRAINT chk_location_hours_exceptions_window
+    CONSTRAINT chk_place_hours_exceptions_window
         CHECK (
             start_time IS NULL
             OR (end_day_offset = 0 AND end_time > start_time)
@@ -683,14 +683,14 @@ CREATE INDEX idx_resources_resource_type
 CREATE INDEX idx_resources_operational_lookup
     ON resources (resource_type_id, operational_status, is_live);
 
-CREATE INDEX idx_locations_geographic_area
-    ON locations (geographic_area_id);
+CREATE INDEX idx_places_geographic_area
+    ON places (geographic_area_id);
 
-CREATE INDEX idx_location_type_assignments_type
-    ON location_type_assignments (location_type_id);
+CREATE INDEX idx_place_type_assignments_type
+    ON place_type_assignments (place_type_id);
 
-CREATE INDEX idx_resource_units_location
-    ON resource_units (location_id);
+CREATE INDEX idx_resource_units_place
+    ON resource_units (place_id);
 
 CREATE INDEX idx_listing_fulfilment_requirements_listing
     ON listing_fulfilment_requirements (listing_id);
@@ -732,11 +732,11 @@ CREATE INDEX idx_resource_attribute_values_attribute
 CREATE INDEX idx_resource_amenities_amenity
     ON resource_amenities (amenity_id);
 
-CREATE INDEX idx_location_opening_hours_lookup
-    ON location_opening_hours (location_id, day_of_week, is_live);
+CREATE INDEX idx_place_opening_hours_lookup
+    ON place_opening_hours (place_id, day_of_week, is_live);
 
-CREATE INDEX idx_location_hours_exceptions_lookup
-    ON location_hours_exceptions (location_id, exception_date);
+CREATE INDEX idx_place_hours_exceptions_lookup
+    ON place_hours_exceptions (place_id, exception_date);
 
 CREATE INDEX idx_resource_availability_hours_lookup
     ON resource_availability_hours (resource_id, day_of_week, is_live);
@@ -756,13 +756,13 @@ COMMENT ON COLUMN resources.operational_status IS
 COMMENT ON COLUMN listing_fulfilment_requirements.selection_mode IS
     'DYNAMIC searches matching active resources; FIXED or RESTRICTED uses listing_resources.';
 
-COMMENT ON COLUMN location_opening_hours.day_of_week IS
+COMMENT ON COLUMN place_opening_hours.day_of_week IS
     'ISO weekday number: 0 = Monday through 6 = Sunday.';
 
 COMMENT ON COLUMN resource_availability_hours.day_of_week IS
     'ISO weekday number: 0 = Monday through 6 = Sunday.';
 
-COMMENT ON COLUMN location_opening_hours.end_day_offset IS
+COMMENT ON COLUMN place_opening_hours.end_day_offset IS
     '0 for the same day and 1 for the following day.';
 
 COMMENT ON COLUMN resource_availability_hours.end_day_offset IS

@@ -15,8 +15,8 @@ INSERT INTO resource_types (
 VALUES
     (
         '0199-4c00-7001-8000-000000000001',
-        'LOCATION',
-        'Location',
+        'PLACE',
+        'Place',
         'A physical establishment or site that provides capability for a listing.',
         TRUE,
         CURRENT_TIMESTAMP,
@@ -53,7 +53,7 @@ VALUES
         '0199-4c00-7005-8000-000000000005',
         'UNIT',
         'Unit',
-        'An assignable space within a location, such as a table or treatment room.',
+        'An assignable space within a place, such as a table or treatment room.',
         TRUE,
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP
@@ -232,7 +232,7 @@ SET
     is_live      = EXCLUDED.is_live,
     updated_at   = CURRENT_TIMESTAMP;
 
-INSERT INTO location_types (
+INSERT INTO place_types (
     id,
     code,
     name,
@@ -255,7 +255,7 @@ VALUES
         '0199-4c00-7302-8000-000000000002',
         'RESTAURANT',
         'Restaurant',
-        'A location where prepared food and drink are served to guests.',
+        'A place where prepared food and drink are served to guests.',
         TRUE,
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP
@@ -273,7 +273,7 @@ VALUES
         '0199-4c00-7304-8000-000000000004',
         'SPA',
         'Spa',
-        'A location providing wellness, beauty or therapeutic treatments.',
+        'A place providing wellness, beauty or therapeutic treatments.',
         TRUE,
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP
@@ -282,7 +282,7 @@ VALUES
         '0199-4c00-7305-8000-000000000005',
         'HOTEL',
         'Hotel',
-        'A location providing paid short-term accommodation and related facilities.',
+        'A place providing paid short-term accommodation and related facilities.',
         TRUE,
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP
