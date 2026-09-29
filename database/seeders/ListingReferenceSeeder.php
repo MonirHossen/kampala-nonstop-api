@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\ActivityType;
 use App\Models\Category;
 use App\Models\EventType;
+use App\Models\ListingReference;
 use App\Models\Subcategory;
 use Illuminate\Database\Seeder;
 
@@ -22,6 +23,9 @@ class ListingReferenceSeeder extends Seeder
         $this->seedSubcategories();
         $this->seedActivityTypes();
         $this->seedEventTypes();
+        $this->seedTags();
+        $this->seedAttributes();
+        $this->seedAmenities();
     }
 
     private function seedCategories(): void
@@ -264,6 +268,82 @@ class ListingReferenceSeeder extends Seeder
                     'name' => $eventType['name'],
                     'is_live' => $eventType['is_live'],
                 ],
+            );
+        }
+    }
+
+    private function seedTags(): void
+    {
+        $this->seedListingReferenceTable('tags', [
+            ['code' => 'FAMILY_FRIENDLY', 'name' => 'Family friendly', 'is_live' => true],
+            ['code' => 'KID_FRIENDLY', 'name' => 'Kid friendly', 'is_live' => true],
+            ['code' => 'PET_FRIENDLY', 'name' => 'Pet friendly', 'is_live' => true],
+            ['code' => 'LGBTQ_FRIENDLY', 'name' => 'LGBTQ+ friendly', 'is_live' => true],
+            ['code' => 'WHEELCHAIR_ACCESSIBLE', 'name' => 'Wheelchair accessible', 'is_live' => true],
+            ['code' => 'OUTDOOR_SEATING', 'name' => 'Outdoor seating', 'is_live' => true],
+            ['code' => 'LIVE_MUSIC', 'name' => 'Live music', 'is_live' => true],
+            ['code' => 'HALAL_OPTIONS', 'name' => 'Halal options', 'is_live' => true],
+            ['code' => 'VEGETARIAN_OPTIONS', 'name' => 'Vegetarian options', 'is_live' => true],
+            ['code' => 'VEGAN_OPTIONS', 'name' => 'Vegan options', 'is_live' => true],
+            ['code' => 'LOCAL_FAVOURITE', 'name' => 'Local favourite', 'is_live' => true],
+            ['code' => 'HIDDEN_GEM', 'name' => 'Hidden gem', 'is_live' => true],
+        ]);
+    }
+
+    private function seedAttributes(): void
+    {
+        $this->seedListingReferenceTable('attributes', [
+            ['code' => 'CAPACITY', 'name' => 'Capacity', 'description' => 'Maximum guests or attendees.', 'is_live' => true],
+            ['code' => 'DURATION_MINUTES', 'name' => 'Duration (minutes)', 'description' => 'Typical experience length in minutes.', 'is_live' => true],
+            ['code' => 'PRICE_LEVEL', 'name' => 'Price level', 'description' => 'Relative price band (e.g. budget, mid-range, premium).', 'is_live' => true],
+            ['code' => 'MINIMUM_AGE', 'name' => 'Minimum age', 'description' => 'Minimum age requirement if any.', 'is_live' => true],
+            ['code' => 'GROUP_SIZE_MIN', 'name' => 'Minimum group size', 'description' => 'Smallest group accepted for booking.', 'is_live' => true],
+            ['code' => 'GROUP_SIZE_MAX', 'name' => 'Maximum group size', 'description' => 'Largest group accepted for booking.', 'is_live' => true],
+            ['code' => 'LANGUAGES_SPOKEN', 'name' => 'Languages spoken', 'description' => 'Languages staff or hosts can use.', 'is_live' => true],
+            ['code' => 'BOOKING_REQUIRED', 'name' => 'Booking required', 'description' => 'Whether advance booking is required.', 'is_live' => true],
+        ]);
+    }
+
+    private function seedAmenities(): void
+    {
+        $this->seedListingReferenceTable('amenities', [
+            ['code' => 'FREE_WIFI', 'name' => 'Free Wi‑Fi', 'is_live' => true],
+            ['code' => 'PARKING', 'name' => 'Parking', 'is_live' => true],
+            ['code' => 'FREE_PARKING', 'name' => 'Free parking', 'is_live' => true],
+            ['code' => 'AIR_CONDITIONING', 'name' => 'Air conditioning', 'is_live' => true],
+            ['code' => 'SWIMMING_POOL', 'name' => 'Swimming pool', 'is_live' => true],
+            ['code' => 'GYM', 'name' => 'Gym / fitness', 'is_live' => true],
+            ['code' => 'SPA', 'name' => 'Spa', 'is_live' => true],
+            ['code' => 'RESTAURANT', 'name' => 'Restaurant on site', 'is_live' => true],
+            ['code' => 'BAR', 'name' => 'Bar on site', 'is_live' => true],
+            ['code' => 'ROOM_SERVICE', 'name' => 'Room service', 'is_live' => true],
+            ['code' => 'LAUNDRY', 'name' => 'Laundry service', 'is_live' => true],
+            ['code' => 'CONFERENCE_FACILITIES', 'name' => 'Conference facilities', 'is_live' => true],
+            ['code' => 'ELEVATOR', 'name' => 'Elevator / lift', 'is_live' => true],
+            ['code' => 'SECURITY', 'name' => '24-hour security', 'is_live' => true],
+            ['code' => 'GENERATOR_BACKUP', 'name' => 'Backup power', 'is_live' => true],
+        ]);
+    }
+
+    /**
+     * @param  non-empty-string  $table
+     * @param  list<array{code: string, name: string, description?: string, is_live: bool}>  $rows
+     */
+    private function seedListingReferenceTable(string $table, array $rows): void
+    {
+        foreach ($rows as $row) {
+            $model = new ListingReference([], $table);
+            $payload = [
+                'name' => $row['name'],
+                'is_live' => $row['is_live'],
+            ];
+            if (array_key_exists('description', $row)) {
+                $payload['description'] = $row['description'];
+            }
+
+            $model->newQuery()->updateOrCreate(
+                ['code' => $row['code']],
+                $payload,
             );
         }
     }
