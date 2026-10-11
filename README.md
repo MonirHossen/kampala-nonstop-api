@@ -52,7 +52,7 @@ make init
 #    Set these values in .env:
 #      DB_HOST=postgres
 #      DB_PASSWORD=postgres
-#      APP_URL=http://localhost:8000
+#      APP_URL=http://localhost:8010
 
 # 3. Start the stack
 make up
@@ -69,7 +69,7 @@ On first start the entrypoint will:
 
 | Service    | URL / Port              |
 | ---------- | ----------------------- |
-| API (Nginx)| http://localhost:8000   |
+| API (Nginx)| http://localhost:8010   |
 | PostgreSQL | localhost:5432          |
 | **DB Admin (Adminer)** | http://localhost:8082 |
 
@@ -100,7 +100,7 @@ Adminer is **development only** (not started in production).
 Health check:
 
 ```bash
-curl http://localhost:8000/api/v1/health
+curl http://localhost:8010/api/v1/health
 # {"status":"ok","version":"v1"}
 ```
 
@@ -125,13 +125,13 @@ For Docker, set at minimum in `.env`:
 ```dotenv
 DB_HOST=postgres
 DB_PASSWORD=postgres
-APP_URL=http://localhost:8000
+APP_URL=http://localhost:8010
 ```
 
 Port overrides go in `.env.docker`:
 
 ```dotenv
-APP_PORT=8000
+APP_PORT=8010
 POSTGRES_PORT=5432
 ```
 
