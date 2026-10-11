@@ -49,7 +49,6 @@ services:
       FACEBOOK_REDIRECT_URI: ${FACEBOOK_REDIRECT_URI:-}
     volumes:
       - .:/var/www/html
-      - vendor_data:/var/www/html/vendor
     depends_on:
       postgres:
         condition: service_healthy
@@ -120,7 +119,6 @@ services:
       FACEBOOK_REDIRECT_URI: ${FACEBOOK_REDIRECT_URI:-}
     volumes:
       - .:/var/www/html
-      - vendor_data:/var/www/html/vendor
     command: php artisan queue:work database --sleep=1 --tries=3 --backoff=10 --timeout=90 --max-time=3600
     depends_on:
       postgres:
@@ -132,7 +130,6 @@ services:
 
 volumes:
   postgres_data:
-  vendor_data:
 
 networks:
   api:
