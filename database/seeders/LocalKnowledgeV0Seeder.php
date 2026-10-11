@@ -23,12 +23,7 @@ class LocalKnowledgeV0Seeder extends Seeder
 {
     public function run(): void
     {
-        $path = base_path('sql/4_2_kampala_nonstop_local_knowledge_v0.sql');
-
-        if (! is_readable($path)) {
-            throw new RuntimeException("Local Knowledge V0 SQL not found: {$path}");
-        }
-
+        $path = $this->resolveSqlPath();
         $sql = file_get_contents($path);
 
         if ($sql === false || trim($sql) === '') {
@@ -40,6 +35,25 @@ class LocalKnowledgeV0Seeder extends Seeder
         DB::transaction(function () use ($sql): void {
             DB::unprepared($sql);
         });
+    }
+
+    private function resolveSqlPath(): string
+    {
+        $filename = '4_2_kampala_nonstop_local_knowledge_v0.sql';
+        $candidates = [
+            base_path('sql/'.$filename),
+            base_path('sql/implemented/'.$filename),
+        ];
+
+        foreach ($candidates as $path) {
+            if (is_readable($path)) {
+                return $path;
+            }
+        }
+
+        throw new RuntimeException(
+            'Local Knowledge V0 SQL not found. Tried: '.implode('; ', $candidates)
+        );
     }
 
     /**

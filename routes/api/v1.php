@@ -2,15 +2,16 @@
 
 use App\Http\Controllers\Api\AcquisitionSourceController;
 use App\Http\Controllers\Api\Auth\AuthController;
-use App\Http\Controllers\Api\CurrencyController;
 use App\Http\Controllers\Api\Auth\PasswordController;
 use App\Http\Controllers\Api\Auth\SocialiteAuthController;
+use App\Http\Controllers\Api\CurrencyController;
 use App\Http\Controllers\Api\DeployController;
 use App\Http\Controllers\Api\Guide\Admin\EssentialTypeController as AdminEssentialTypeController;
 use App\Http\Controllers\Api\Guide\Admin\EssentialValueController as AdminEssentialValueController;
 use App\Http\Controllers\Api\Guide\Admin\GeographicAreaController as AdminGeographicAreaController;
 use App\Http\Controllers\Api\Guide\GuideController;
 use App\Http\Controllers\Api\InterestTypeController;
+use App\Http\Controllers\Api\ListingCatalogueController;
 use App\Http\Controllers\Api\LocalKnowledge\Admin\LocalKnowledgeItemController as AdminLocalKnowledgeItemController;
 use App\Http\Controllers\Api\LocalKnowledge\Admin\LocalKnowledgeTagController as AdminLocalKnowledgeTagController;
 use App\Http\Controllers\Api\LocalKnowledge\Admin\LocalKnowledgeTypeController as AdminLocalKnowledgeTypeController;
@@ -239,3 +240,13 @@ Route::prefix('guide')->group(function () {
 Route::prefix('local-knowledge')->group(function () {
     Route::get('/random', [LocalKnowledgeController::class, 'random']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Discover listings — public, live rows only
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/listings', [ListingCatalogueController::class, 'index']);
+Route::get('/listings/{slug}', [ListingCatalogueController::class, 'show'])
+    ->where('slug', '[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*');
