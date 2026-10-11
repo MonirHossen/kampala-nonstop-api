@@ -57,6 +57,9 @@ fresh: ## Reset database and re-run migrations
 fresh-seed: ## Reset database and re-run migrations and seed data
 	$(COMPOSE_DEV) exec $(APP_SERVICE) php artisan migrate:fresh --seed --force
 
+seed: ## Reset database and re-run migrations and seed data
+	$(COMPOSE_DEV) exec $(APP_SERVICE) php artisan db:seed
+
 test: ## Run PHPUnit tests
 	$(COMPOSE_DEV) exec $(APP_SERVICE) php artisan test
 
