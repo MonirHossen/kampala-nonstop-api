@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             CountryGuideUgandaSeeder::class,
             LocalKnowledgeReferenceSeeder::class,
             LocalKnowledgeV0Seeder::class,
+            DiscoverLiveListingsSeeder::class,
         ]);
     }
 }

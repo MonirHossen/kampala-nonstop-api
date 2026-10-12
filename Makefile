@@ -7,7 +7,7 @@ APP_SERVICE   := app
 NGINX_SERVICE := nginx
 DB_SERVICE    := postgres
 
-.PHONY: help init build up down restart logs ps shell artisan composer migrate fresh test clean prod-build prod-up prod-down queue-logs queue-restart
+.PHONY: help init build up down restart logs ps shell artisan composer migrate fresh seed seed-discover test clean prod-build prod-up prod-down queue-logs queue-restart
 
 help: ## Show available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -57,8 +57,11 @@ fresh: ## Reset database and re-run migrations
 fresh-seed: ## Reset database and re-run migrations and seed data
 	$(COMPOSE_DEV) exec $(APP_SERVICE) php artisan migrate:fresh --seed --force
 
-seed: ## Reset database and re-run migrations and seed data
-	$(COMPOSE_DEV) exec $(APP_SERVICE) php artisan db:seed
+seed: ## Run database seeders (includes Discover live demo listings)
+	$(COMPOSE_DEV) exec $(APP_SERVICE) php artisan db:seed --force
+
+seed-discover: ## Publish live Discover demo listings (safe to re-run)
+	$(COMPOSE_DEV) exec $(APP_SERVICE) php artisan db:seed --class=DiscoverLiveListingsSeeder --force
 
 test: ## Run PHPUnit tests
 	$(COMPOSE_DEV) exec $(APP_SERVICE) php artisan test

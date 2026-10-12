@@ -53,7 +53,9 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - api
+      api:
+        aliases:
+          - api-php
 
   nginx:
     image: nginx:1.27-alpine
