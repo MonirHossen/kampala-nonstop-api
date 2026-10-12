@@ -6,9 +6,13 @@ use App\Models\Category;
 use App\Models\GeographicArea;
 use App\Models\GeographicAreaType;
 use App\Models\Listing;
+use App\Models\ListingBookingHour;
+use App\Models\ListingBookingRule;
 use App\Models\ListingMedia;
+use App\Models\ListingOption;
 use App\Models\ListingType;
 use App\Models\Subcategory;
+use App\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -109,6 +113,15 @@ class PublicListingCatalogueTest extends TestCase
             ->assertJsonPath('data.inclusions', 'Guide and water')
             ->assertJsonPath('data.gallery.0.url', 'https://cdn.example.test/food-cover.jpg')
             ->assertJsonPath('data.gallery.1.url', 'https://cdn.example.test/food-stall.jpg')
+            ->assertJsonPath('data.options.0.name', 'Evening walk')
+            ->assertJsonPath('data.options.0.duration_minutes', 120)
+            ->assertJsonPath('data.options.0.is_default', true)
+            ->assertJsonPath('data.tags.0.code', 'LOCAL_FAVOURITE')
+            ->assertJsonPath('data.tags.0.name', 'Local favourite')
+            ->assertJsonPath('data.booking_hours.0.day_of_week', 5)
+            ->assertJsonPath('data.booking_hours.0.day_name', 'Friday')
+            ->assertJsonPath('data.booking_hours.0.start_time', '17:00')
+            ->assertJsonPath('data.booking_rule.minimum_notice_minutes', 360)
             ->assertJsonMissing(['url' => 'https://cdn.example.test/hidden.jpg']);
 
         $this->assertCount(2, $this->getJson('/api/v1/listings/nile-street-food-walk')->json('data.gallery'));
@@ -271,6 +284,47 @@ class PublicListingCatalogueTest extends TestCase
             'sort_order' => 2,
             'is_cover' => false,
             'is_live' => true,
+        ]);
+
+        ListingOption::query()->create([
+            'listing_id' => $this->liveActivity->id,
+            'name' => 'Evening walk',
+            'description' => 'Three tasting stops.',
+            'duration_minutes' => 120,
+            'min_participants' => 2,
+            'max_participants' => 8,
+            'is_default' => true,
+            'is_live' => true,
+        ]);
+
+        $localFavourite = Tag::query()->create([
+            'code' => 'LOCAL_FAVOURITE',
+            'name' => 'Local favourite',
+            'is_live' => true,
+        ]);
+
+        DB::table('listing_tags')->insert([
+            'listing_id' => $this->liveActivity->id,
+            'tag_id' => $localFavourite->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        ListingBookingHour::query()->create([
+            'listing_id' => $this->liveActivity->id,
+            'day_of_week' => 5,
+            'start_time' => '17:00',
+            'end_time' => '20:00',
+            'end_day_offset' => 0,
+            'is_live' => true,
+        ]);
+
+        ListingBookingRule::query()->create([
+            'listing_id' => $this->liveActivity->id,
+            'minimum_notice_minutes' => 360,
+            'maximum_advance_days' => 45,
+            'buffer_before_minutes' => 0,
+            'buffer_after_minutes' => 0,
         ]);
 
         $this->draftActivity = Listing::query()->create([

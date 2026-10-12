@@ -3,7 +3,11 @@
 namespace App\Services\Discover;
 
 use App\Models\Listing;
+use App\Models\ListingBookingHour;
+use App\Models\ListingBookingRule;
 use App\Models\ListingMedia;
+use App\Models\ListingOption;
+use App\Models\Tag;
 use App\Support\DiscoverCatalogueMap;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -12,6 +16,16 @@ class PublicListingCatalogue
     public const DEFAULT_PER_PAGE = 12;
 
     public const MAX_PER_PAGE = 24;
+
+    private const DAY_NAMES = [
+        0 => 'Sunday',
+        1 => 'Monday',
+        2 => 'Tuesday',
+        3 => 'Wednesday',
+        4 => 'Thursday',
+        5 => 'Friday',
+        6 => 'Saturday',
+    ];
 
     /**
      * @param  array<string, mixed>  $filters
@@ -45,6 +59,7 @@ class PublicListingCatalogue
     public function findLiveBySlug(string $slug, string $countryCode = 'UG'): ?Listing
     {
         return $this->baseQuery($countryCode)
+            ->with(['options', 'tags', 'bookingHours', 'bookingRule'])
             ->where('slug', $slug)
             ->first();
     }
@@ -90,9 +105,39 @@ class PublicListingCatalogue
                     'url' => $media->media_url,
                     'alt_text' => $media->alt_text,
                     'caption' => $media->caption,
+                    'is_cover' => $media->is_cover,
                 ])
                 ->values()
                 ->all(),
+            'tags' => $listing->tags
+                ->map(fn (Tag $tag): array => [
+                    'code' => $tag->code,
+                    'name' => $tag->name,
+                ])
+                ->values()
+                ->all(),
+            'options' => $listing->options
+                ->map(fn (ListingOption $option): array => [
+                    'name' => $option->name,
+                    'description' => $option->description,
+                    'duration_minutes' => $option->duration_minutes,
+                    'min_participants' => $option->min_participants,
+                    'max_participants' => $option->max_participants,
+                    'is_default' => $option->is_default,
+                ])
+                ->values()
+                ->all(),
+            'booking_hours' => $listing->bookingHours
+                ->map(fn (ListingBookingHour $hour): array => [
+                    'day_of_week' => $hour->day_of_week,
+                    'day_name' => self::DAY_NAMES[$hour->day_of_week] ?? null,
+                    'start_time' => $this->formatTime($hour->start_time),
+                    'end_time' => $this->formatTime($hour->end_time),
+                    'end_day_offset' => $hour->end_day_offset,
+                ])
+                ->values()
+                ->all(),
+            'booking_rule' => $this->presentBookingRule($listing->bookingRule),
         ];
     }
 
@@ -196,5 +241,39 @@ class PublicListingCatalogue
             'url' => $cover->media_url,
             'alt_text' => $cover->alt_text,
         ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function presentBookingRule(?ListingBookingRule $rule): ?array
+    {
+        if ($rule === null) {
+            return null;
+        }
+
+        return [
+            'minimum_notice_minutes' => $rule->minimum_notice_minutes,
+            'maximum_advance_days' => $rule->maximum_advance_days,
+            'buffer_before_minutes' => $rule->buffer_before_minutes,
+            'buffer_after_minutes' => $rule->buffer_after_minutes,
+            'earliest_arrival_time' => $this->formatTime($rule->earliest_arrival_time),
+            'latest_arrival_time' => $this->formatTime($rule->latest_arrival_time),
+        ];
+    }
+
+    private function formatTime(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('H:i');
+        }
+
+        $raw = (string) $value;
+
+        return strlen($raw) >= 5 ? substr($raw, 0, 5) : $raw;
     }
 }
