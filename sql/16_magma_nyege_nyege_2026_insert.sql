@@ -1,8 +1,9 @@
 -- Kampala Nonstop - Magma Tours Nyege Nyege 2026
 -- PostgreSQL 13+ insert script. Source: Kampala_Nonstop_Magma_2026_Data_Capture.xlsx.
 -- AUDIT ACTOR: UPLOAD. No UPDATE/DELETE of existing business records.
--- Run with psql -v ON_ERROR_STOP=1 -f 14_magma_nyege_nyege_2026_insert.sql
+-- Run with psql -v ON_ERROR_STOP=1 -f 16_magma_nyege_nyege_2026_insert.sql
 -- Apply schemas/reference seeds 9 through 13 and the agreed places rename first.
+-- Then apply pricing 14, pricing enhancements 15 AND service_dates 15.
 -- Existing core Listing/Option DDL is checked at runtime, not silently assumed.
 --
 -- IMPORTANT: this capture workbook was NOT a fully validated database seed.
@@ -13,14 +14,22 @@
 -- endpoint/venue location. R05 uses the supplier's Kalagala Falls/Jinja claim.
 -- R02 and R03 physical geographic areas still need confirmation.
 -- All records remain unpublished. Tent/banda/cottage units are unverified drafts.
--- All monetary/inventory/source sheets are retained in the TEMP source snapshot
--- and this file. They are NOT persisted as pricing, availability or bookings:
--- approved business tables for those functions were not supplied.
+-- Raw catalogue prices are inserted into listing_pricing_profiles/listing_price_offers.
+-- All amounts are the ORIGINAL source UGX prices, not doubled occupancy totals.
+-- Original supplier group-of-five per-person prices are retained without another discount.
+-- Price-validity dates are NULL; no sales windows are needed for this offer.
+-- Approximate USD is informational, not a separately payable currency rate.
+-- Unknown price bases stay NULL and inactive. Inventory remains source claims, not stock.
+-- Extra nights have no amount and remain request-only; C15 is an extra-person supplement.
 --
--- Correction to workbook: schema 12 allows DATE_ONLY occurrences only for Events.
--- The three package DATE_ONLY occurrences are retained in the source snapshot,
--- but omitted from business inserts. Event associations retain their festival
--- occurrence link. Do not fabricate exact arrival/check-in timestamps.
+-- Service date migration 15 permits DATE_ONLY service/Experience occurrences.
+-- Event 19-22 Nov is INCLUSIVE; P01/P02/P03 check-in 19 Nov, checkout 23 Nov
+-- is EXCLUSIVE (four nights). Time zone Africa/Kampala; no fictional clock times.
+-- P01-P04 expire at the exclusive cutoff 24 Nov 00:00 Uganda time.
+-- Catalogue AND booking-request code must enforce expires_at; schema alone does not.
+-- Per-person pricing and two-guest unit occupancy are independent. Group rates
+-- use qualifying party size >=5; planner allocates suitable shared/solo units.
+-- Missing source details/required mappings still make the entire import fail.
 --
 -- Reruns are deliberately rejected on duplicate keys; there is no overwrite or
 -- ON CONFLICT DO NOTHING that could hide mismatched or incomplete existing data.
@@ -238,9 +247,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Four-night package total",
       "minimum_group_size": null,
-      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved.",
-      "total_ugx": 455000,
-      "indicative_total_usd": 110.44
+      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved."
     },
     {
       "rate_ref": "P01-R2",
@@ -255,9 +262,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Four-night package total",
       "minimum_group_size": 5,
-      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved.",
-      "total_ugx": 430000,
-      "indicative_total_usd": 104.37
+      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved."
     },
     {
       "rate_ref": "P01-R3",
@@ -272,9 +277,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Four-night package total",
       "minimum_group_size": null,
-      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved.",
-      "total_ugx": 455000,
-      "indicative_total_usd": 110.44
+      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved."
     },
     {
       "rate_ref": "P02-R1",
@@ -289,9 +292,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 2,
       "price_basis": "Four-night package total",
       "minimum_group_size": null,
-      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved.",
-      "total_ugx": 1320000,
-      "indicative_total_usd": 320.39
+      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved."
     },
     {
       "rate_ref": "P02-R2",
@@ -306,9 +307,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 2,
       "price_basis": "Four-night package total",
       "minimum_group_size": 5,
-      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved.",
-      "total_ugx": 1250000,
-      "indicative_total_usd": 303.4
+      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved."
     },
     {
       "rate_ref": "P02-R3",
@@ -323,9 +322,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Four-night package total",
       "minimum_group_size": null,
-      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved.",
-      "total_ugx": 1090000,
-      "indicative_total_usd": 264.56
+      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved."
     },
     {
       "rate_ref": "P03-R1",
@@ -340,9 +337,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 2,
       "price_basis": "Four-night package total",
       "minimum_group_size": null,
-      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved.",
-      "total_ugx": 4500000,
-      "indicative_total_usd": 1092.23
+      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved."
     },
     {
       "rate_ref": "P03-R2",
@@ -357,9 +352,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 2,
       "price_basis": "Four-night package total",
       "minimum_group_size": 5,
-      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved.",
-      "total_ugx": 4280000,
-      "indicative_total_usd": 1038.83
+      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved."
     },
     {
       "rate_ref": "P03-R3",
@@ -374,9 +367,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Four-night package total",
       "minimum_group_size": null,
-      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved.",
-      "total_ugx": 3735000,
-      "indicative_total_usd": 906.55
+      "detail": "Original price per person; derived total uses stated occupancy. Discount discrepancy unresolved."
     },
     {
       "rate_ref": "C04-R10",
@@ -391,9 +382,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Per person per night",
       "minimum_group_size": null,
-      "detail": "",
-      "total_ugx": 30000,
-      "indicative_total_usd": 7.28
+      "detail": ""
     },
     {
       "rate_ref": "C05-R11",
@@ -408,9 +397,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Per person per night",
       "minimum_group_size": null,
-      "detail": "",
-      "total_ugx": 70000,
-      "indicative_total_usd": 16.99
+      "detail": ""
     },
     {
       "rate_ref": "C06-R12",
@@ -425,9 +412,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Per late breakfast box",
       "minimum_group_size": null,
-      "detail": "",
-      "total_ugx": 20000,
-      "indicative_total_usd": 4.85
+      "detail": ""
     },
     {
       "rate_ref": "C07-R13",
@@ -442,9 +427,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Per dinner voucher",
       "minimum_group_size": null,
-      "detail": "",
-      "total_ugx": 35000,
-      "indicative_total_usd": 8.5
+      "detail": ""
     },
     {
       "rate_ref": "C08-R14",
@@ -459,9 +442,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Per rain kit",
       "minimum_group_size": null,
-      "detail": "",
-      "total_ugx": 30000,
-      "indicative_total_usd": 7.28
+      "detail": ""
     },
     {
       "rate_ref": "C09-R15",
@@ -476,9 +457,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Per stay; guest basis unclear",
       "minimum_group_size": null,
-      "detail": "",
-      "total_ugx": 35000,
-      "indicative_total_usd": 8.5
+      "detail": ""
     },
     {
       "rate_ref": "C10-R16",
@@ -493,9 +472,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Participant basis not stated",
       "minimum_group_size": null,
-      "detail": "",
-      "total_ugx": 120000,
-      "indicative_total_usd": 29.13
+      "detail": ""
     },
     {
       "rate_ref": "C11-R17",
@@ -510,9 +487,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Participant basis not stated",
       "minimum_group_size": null,
-      "detail": "",
-      "total_ugx": 300000,
-      "indicative_total_usd": 72.82
+      "detail": ""
     },
     {
       "rate_ref": "P04-R18",
@@ -527,9 +502,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Tubing plus one dinner voucher",
       "minimum_group_size": null,
-      "detail": "",
-      "total_ugx": 155000,
-      "indicative_total_usd": 37.62
+      "detail": ""
     },
     {
       "rate_ref": "C12-R19",
@@ -544,9 +517,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Per hour; participant/vehicle basis unclear",
       "minimum_group_size": null,
-      "detail": "",
-      "total_ugx": 255000,
-      "indicative_total_usd": 61.89
+      "detail": ""
     },
     {
       "rate_ref": "C13-R20",
@@ -561,9 +532,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Per person",
       "minimum_group_size": null,
-      "detail": "",
-      "total_ugx": 245000,
-      "indicative_total_usd": 59.47
+      "detail": ""
     },
     {
       "rate_ref": "C14-R21",
@@ -578,9 +547,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Per vehicle up to five people",
       "minimum_group_size": null,
-      "detail": "",
-      "total_ugx": 2470000,
-      "indicative_total_usd": 599.51
+      "detail": ""
     },
     {
       "rate_ref": "C14-R22",
@@ -595,9 +562,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Per person in a full vehicle",
       "minimum_group_size": null,
-      "detail": "",
-      "total_ugx": 495000,
-      "indicative_total_usd": 120.15
+      "detail": ""
     },
     {
       "rate_ref": "C15-R23",
@@ -612,9 +577,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Per extra person per night",
       "minimum_group_size": null,
-      "detail": "Adjustment to C03/P03",
-      "total_ugx": 245000,
-      "indicative_total_usd": 59.47
+      "detail": "Adjustment to C03/P03"
     },
     {
       "rate_ref": "C16-R24",
@@ -629,9 +592,7 @@ INSERT INTO magma_source_snapshot VALUES ($magma_json${
       "occupancy_multiplier": 1,
       "price_basis": "Extra night on 18 or 23 Nov; on request",
       "minimum_group_size": null,
-      "detail": "Accommodation extension adjustment",
-      "total_ugx": null,
-      "indicative_total_usd": null
+      "detail": "Accommodation extension adjustment"
     }
   ],
   "inventory": [
@@ -1556,7 +1517,8 @@ FROM jsonb_to_recordset($magma_json$[
       "_capture_ref": "P01",
       "_status": "DRAFT",
       "_source": "Derived PDF; original Magma offer",
-      "_listing_type_code": "EXPERIENCE"
+      "_listing_type_code": "EXPERIENCE",
+      "expires_at": "2026-11-24T00:00:00+03:00"
     }
   },
   {
@@ -1589,7 +1551,8 @@ FROM jsonb_to_recordset($magma_json$[
       "_capture_ref": "P02",
       "_status": "DRAFT",
       "_source": "Derived PDF; original Magma offer",
-      "_listing_type_code": "EXPERIENCE"
+      "_listing_type_code": "EXPERIENCE",
+      "expires_at": "2026-11-24T00:00:00+03:00"
     }
   },
   {
@@ -1622,7 +1585,8 @@ FROM jsonb_to_recordset($magma_json$[
       "_capture_ref": "P03",
       "_status": "DRAFT",
       "_source": "Derived PDF; original Magma offer",
-      "_listing_type_code": "EXPERIENCE"
+      "_listing_type_code": "EXPERIENCE",
+      "expires_at": "2026-11-24T00:00:00+03:00"
     }
   },
   {
@@ -1655,7 +1619,8 @@ FROM jsonb_to_recordset($magma_json$[
       "_capture_ref": "P04",
       "_status": "DRAFT",
       "_source": "Derived PDF; original Magma offer",
-      "_listing_type_code": "EXPERIENCE"
+      "_listing_type_code": "EXPERIENCE",
+      "expires_at": "2026-11-24T00:00:00+03:00"
     }
   },
   {
@@ -3920,7 +3885,9 @@ FROM jsonb_to_recordset($magma_json$[
       "ends_on": "2026-11-22",
       "_capture_ref": "E01-2026",
       "_status": "DRAFT",
-      "_source": "Derived PDF; original Magma offer"
+      "_source": "Derived PDF; original Magma offer",
+      "time_zone": "Africa/Kampala",
+      "end_date_basis": "INCLUSIVE"
     }
   },
   {
@@ -3943,10 +3910,12 @@ FROM jsonb_to_recordset($magma_json$[
       "updated_by": null,
       "schedule_precision": "DATE_ONLY",
       "starts_on": "2026-11-19",
-      "ends_on": "2026-11-22",
+      "ends_on": "2026-11-23",
       "_capture_ref": "P01-2026",
       "_status": "DRAFT",
-      "_source": "Derived PDF; original Magma offer"
+      "_source": "Derived PDF; original Magma offer",
+      "time_zone": "Africa/Kampala",
+      "end_date_basis": "EXCLUSIVE"
     }
   },
   {
@@ -3969,10 +3938,12 @@ FROM jsonb_to_recordset($magma_json$[
       "updated_by": null,
       "schedule_precision": "DATE_ONLY",
       "starts_on": "2026-11-19",
-      "ends_on": "2026-11-22",
+      "ends_on": "2026-11-23",
       "_capture_ref": "P02-2026",
       "_status": "DRAFT",
-      "_source": "Derived PDF; original Magma offer"
+      "_source": "Derived PDF; original Magma offer",
+      "time_zone": "Africa/Kampala",
+      "end_date_basis": "EXCLUSIVE"
     }
   },
   {
@@ -3995,10 +3966,12 @@ FROM jsonb_to_recordset($magma_json$[
       "updated_by": null,
       "schedule_precision": "DATE_ONLY",
       "starts_on": "2026-11-19",
-      "ends_on": "2026-11-22",
+      "ends_on": "2026-11-23",
       "_capture_ref": "P03-2026",
       "_status": "DRAFT",
-      "_source": "Derived PDF; original Magma offer"
+      "_source": "Derived PDF; original Magma offer",
+      "time_zone": "Africa/Kampala",
+      "end_date_basis": "EXCLUSIVE"
     }
   },
   {
@@ -8315,6 +8288,897 @@ FROM jsonb_to_recordset($magma_json$[
       "_status": "DRAFT",
       "_source": "Derived PDF; original Magma offer"
     }
+  },
+  {
+    "ordinal": 318,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "P01",
+    "payload": {
+      "listing_id": "603a7cbb-6153-586b-8e3e-d0d7aa3acdb3",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source UGX rates are authoritative. USD figures in the source are approximate at 4,120 UGX/USD. Packages are per person for four nights; Comfort/Premium sharing requires two occupants per unit. Group eligibility uses total qualifying party size, not occupants in one unit. Listed group prices are retained; no additional 5% deduction.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "P01"
+    }
+  },
+  {
+    "ordinal": 319,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "P02",
+    "payload": {
+      "listing_id": "bbfccfe6-47e4-5227-b606-b3979951e3df",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source UGX rates are authoritative. USD figures in the source are approximate at 4,120 UGX/USD. Packages are per person for four nights; Comfort/Premium sharing requires two occupants per unit. Group eligibility uses total qualifying party size, not occupants in one unit. Listed group prices are retained; no additional 5% deduction.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "P02"
+    }
+  },
+  {
+    "ordinal": 320,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "P03",
+    "payload": {
+      "listing_id": "d3b54672-5eac-56ff-b101-6b0fb54c82d2",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source UGX rates are authoritative. USD figures in the source are approximate at 4,120 UGX/USD. Packages are per person for four nights; Comfort/Premium sharing requires two occupants per unit. Group eligibility uses total qualifying party size, not occupants in one unit. Listed group prices are retained; no additional 5% deduction.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "P03"
+    }
+  },
+  {
+    "ordinal": 321,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "P04",
+    "payload": {
+      "listing_id": "7c1ce966-9362-5098-afe0-9f1d49855d14",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source UGX rates are authoritative. USD figures in the source are approximate at 4,120 UGX/USD. Packages are per person for four nights; Comfort/Premium sharing requires two occupants per unit. Group eligibility uses total qualifying party size, not occupants in one unit. Listed group prices are retained; no additional 5% deduction.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "P04"
+    }
+  },
+  {
+    "ordinal": 322,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "C01",
+    "payload": {
+      "listing_id": "e79b1ea1-4582-57e1-b65c-ff6a74d3bc5b",
+      "default_currency": "UGX",
+      "display_mode": "REQUEST_ONLY",
+      "price_assumptions": "Source rate/unit retained without inferring per-person basis where the supplier does not state it. Extra nights require a quote. C03 EXTRA_PERSON is a supplement, not the base accommodation price.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C01"
+    }
+  },
+  {
+    "ordinal": 323,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "C02",
+    "payload": {
+      "listing_id": "8be836c5-38b0-582c-8aca-a6c7156100cc",
+      "default_currency": "UGX",
+      "display_mode": "REQUEST_ONLY",
+      "price_assumptions": "Source rate/unit retained without inferring per-person basis where the supplier does not state it. Extra nights require a quote. C03 EXTRA_PERSON is a supplement, not the base accommodation price.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C02"
+    }
+  },
+  {
+    "ordinal": 324,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "C03",
+    "payload": {
+      "listing_id": "5b78f41b-459b-5ff0-898c-20e0e7e6ac9f",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source rate/unit retained without inferring per-person basis where the supplier does not state it. Extra nights require a quote. C03 EXTRA_PERSON is a supplement, not the base accommodation price.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C03"
+    }
+  },
+  {
+    "ordinal": 325,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "C04",
+    "payload": {
+      "listing_id": "99f6d231-4551-5858-9edf-91a62a08adfe",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source rate/unit retained without inferring per-person basis where the supplier does not state it. Extra nights require a quote. C03 EXTRA_PERSON is a supplement, not the base accommodation price.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C04"
+    }
+  },
+  {
+    "ordinal": 326,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "C05",
+    "payload": {
+      "listing_id": "e8bd2c32-88fb-56af-b1ac-0b84aed208d8",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source rate/unit retained without inferring per-person basis where the supplier does not state it. Extra nights require a quote. C03 EXTRA_PERSON is a supplement, not the base accommodation price.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C05"
+    }
+  },
+  {
+    "ordinal": 327,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "C06",
+    "payload": {
+      "listing_id": "9a8b2868-b005-5a7c-97e5-ce48d5f2c550",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source rate/unit retained without inferring per-person basis where the supplier does not state it. Extra nights require a quote. C03 EXTRA_PERSON is a supplement, not the base accommodation price.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C06"
+    }
+  },
+  {
+    "ordinal": 328,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "C07",
+    "payload": {
+      "listing_id": "4975cbdf-c671-55cc-a7eb-77129cbf92c0",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source rate/unit retained without inferring per-person basis where the supplier does not state it. Extra nights require a quote. C03 EXTRA_PERSON is a supplement, not the base accommodation price.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C07"
+    }
+  },
+  {
+    "ordinal": 329,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "C08",
+    "payload": {
+      "listing_id": "07a162a6-4b89-52ac-9047-66f561432546",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source rate/unit retained without inferring per-person basis where the supplier does not state it. Extra nights require a quote. C03 EXTRA_PERSON is a supplement, not the base accommodation price.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C08"
+    }
+  },
+  {
+    "ordinal": 330,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "C09",
+    "payload": {
+      "listing_id": "16ebc700-65fa-537d-a1bc-a8d2b1dfd14d",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source rate/unit retained without inferring per-person basis where the supplier does not state it. Extra nights require a quote. C03 EXTRA_PERSON is a supplement, not the base accommodation price.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C09"
+    }
+  },
+  {
+    "ordinal": 331,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "C10",
+    "payload": {
+      "listing_id": "db0c4cea-4c14-50e3-b5ed-9e7be38afe4e",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source rate/unit retained without inferring per-person basis where the supplier does not state it. Extra nights require a quote. C03 EXTRA_PERSON is a supplement, not the base accommodation price.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C10"
+    }
+  },
+  {
+    "ordinal": 332,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "C11",
+    "payload": {
+      "listing_id": "750c0034-d4d4-5471-9903-3f3cd9a80a3c",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source rate/unit retained without inferring per-person basis where the supplier does not state it. Extra nights require a quote. C03 EXTRA_PERSON is a supplement, not the base accommodation price.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C11"
+    }
+  },
+  {
+    "ordinal": 333,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "C12",
+    "payload": {
+      "listing_id": "6c1250e9-f87b-5430-8768-843518060f35",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source rate/unit retained without inferring per-person basis where the supplier does not state it. Extra nights require a quote. C03 EXTRA_PERSON is a supplement, not the base accommodation price.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C12"
+    }
+  },
+  {
+    "ordinal": 334,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "C13",
+    "payload": {
+      "listing_id": "879f3ce8-fd39-5fe8-839e-65c5bcd4189f",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source rate/unit retained without inferring per-person basis where the supplier does not state it. Extra nights require a quote. C03 EXTRA_PERSON is a supplement, not the base accommodation price.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C13"
+    }
+  },
+  {
+    "ordinal": 335,
+    "table_name": "listing_pricing_profiles",
+    "capture_ref": "C14",
+    "payload": {
+      "listing_id": "f411aa6e-1b7b-5264-9b4b-a198784273ff",
+      "default_currency": "UGX",
+      "display_mode": "TIERS",
+      "price_assumptions": "Source rate/unit retained without inferring per-person basis where the supplier does not state it. Extra nights require a quote. C03 EXTRA_PERSON is a supplement, not the base accommodation price.",
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C14"
+    }
+  },
+  {
+    "ordinal": 336,
+    "table_name": "listing_price_offers",
+    "capture_ref": "P01-R1",
+    "payload": {
+      "id": "7624d856-33fd-5ff5-8ffb-70e6acbc8f58",
+      "listing_id": "603a7cbb-6153-586b-8e3e-d0d7aa3acdb3",
+      "listing_option_id": null,
+      "offer_code": "STANDARD",
+      "label": "Standard",
+      "amount": 455000,
+      "currency": "UGX",
+      "occupancy_description": "Four-night package total; Approximate source USD 110",
+      "pricing_basis_code": "PER_PERSON",
+      "pricing_period_code": null,
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": null,
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 0,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "P01-R1"
+    }
+  },
+  {
+    "ordinal": 337,
+    "table_name": "listing_price_offers",
+    "capture_ref": "P01-R2",
+    "payload": {
+      "id": "179f4768-b830-5bb1-95ca-3f7c75aee4bf",
+      "listing_id": "603a7cbb-6153-586b-8e3e-d0d7aa3acdb3",
+      "listing_option_id": null,
+      "offer_code": "GROUP_5_PLUS",
+      "label": "Group 5+",
+      "amount": 430000,
+      "currency": "UGX",
+      "occupancy_description": "Four-night package total; 5+ total qualifying travellers; no additional discount. Approximate source USD 104",
+      "pricing_basis_code": "PER_PERSON",
+      "pricing_period_code": null,
+      "min_guests": 5,
+      "max_guests": null,
+      "occupancy_code": null,
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 1,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "P01-R2"
+    }
+  },
+  {
+    "ordinal": 338,
+    "table_name": "listing_price_offers",
+    "capture_ref": "P01-R3",
+    "payload": {
+      "id": "f78c15fd-b1e7-5ec2-83da-f2cc1b327150",
+      "listing_id": "603a7cbb-6153-586b-8e3e-d0d7aa3acdb3",
+      "listing_option_id": null,
+      "offer_code": "SOLO",
+      "label": "Solo",
+      "amount": 455000,
+      "currency": "UGX",
+      "occupancy_description": "Four-night package total; Approximate source USD 110",
+      "pricing_basis_code": "PER_PERSON",
+      "pricing_period_code": null,
+      "min_guests": 1,
+      "max_guests": 1,
+      "occupancy_code": "SINGLE",
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 2,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "P01-R3"
+    }
+  },
+  {
+    "ordinal": 339,
+    "table_name": "listing_price_offers",
+    "capture_ref": "P02-R1",
+    "payload": {
+      "id": "3fbca35a-2b94-5824-8fbc-d35e84a86ab1",
+      "listing_id": "bbfccfe6-47e4-5227-b606-b3979951e3df",
+      "listing_option_id": "5990356d-af04-5193-ac57-f8eb8a8e4e9a",
+      "offer_code": "STANDARD",
+      "label": "Standard shared",
+      "amount": 660000,
+      "currency": "UGX",
+      "occupancy_description": "Four-night package total; two guests sharing; amount is per person, not the two-person total. Approximate source USD 160",
+      "pricing_basis_code": "PER_PERSON",
+      "pricing_period_code": null,
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": "SHARED",
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 3,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "P02-R1"
+    }
+  },
+  {
+    "ordinal": 340,
+    "table_name": "listing_price_offers",
+    "capture_ref": "P02-R2",
+    "payload": {
+      "id": "4e491765-852c-50f8-b0e1-3d1bae208e5b",
+      "listing_id": "bbfccfe6-47e4-5227-b606-b3979951e3df",
+      "listing_option_id": "5990356d-af04-5193-ac57-f8eb8a8e4e9a",
+      "offer_code": "GROUP_5_PLUS",
+      "label": "Group 5+ shared",
+      "amount": 625000,
+      "currency": "UGX",
+      "occupancy_description": "Four-night package total; two guests sharing; amount is per person, not the two-person total. 5+ total qualifying travellers; no additional discount. Approximate source USD 152",
+      "pricing_basis_code": "PER_PERSON",
+      "pricing_period_code": null,
+      "min_guests": 5,
+      "max_guests": null,
+      "occupancy_code": "SHARED",
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 4,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "P02-R2"
+    }
+  },
+  {
+    "ordinal": 341,
+    "table_name": "listing_price_offers",
+    "capture_ref": "P02-R3",
+    "payload": {
+      "id": "0d9001d8-09a8-5314-b5d5-7364901f7e7f",
+      "listing_id": "bbfccfe6-47e4-5227-b606-b3979951e3df",
+      "listing_option_id": "3573c8c5-dde0-5137-92fb-f461fc3878cb",
+      "offer_code": "SOLO",
+      "label": "Solo",
+      "amount": 1090000,
+      "currency": "UGX",
+      "occupancy_description": "Four-night package total; Approximate source USD 265",
+      "pricing_basis_code": "PER_PERSON",
+      "pricing_period_code": null,
+      "min_guests": 1,
+      "max_guests": 1,
+      "occupancy_code": "SINGLE",
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 5,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "P02-R3"
+    }
+  },
+  {
+    "ordinal": 342,
+    "table_name": "listing_price_offers",
+    "capture_ref": "P03-R1",
+    "payload": {
+      "id": "0b6fc169-a026-5416-9bb3-d0c41258499c",
+      "listing_id": "d3b54672-5eac-56ff-b101-6b0fb54c82d2",
+      "listing_option_id": "b1fed1cb-9ffa-5628-b1f9-bc5ebae469ed",
+      "offer_code": "STANDARD",
+      "label": "Standard shared",
+      "amount": 2250000,
+      "currency": "UGX",
+      "occupancy_description": "Four-night package total; two guests sharing; amount is per person, not the two-person total. Approximate source USD 546",
+      "pricing_basis_code": "PER_PERSON",
+      "pricing_period_code": null,
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": "SHARED",
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 6,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "P03-R1"
+    }
+  },
+  {
+    "ordinal": 343,
+    "table_name": "listing_price_offers",
+    "capture_ref": "P03-R2",
+    "payload": {
+      "id": "b541ea3b-4aaf-5b33-846a-a8e58deed58a",
+      "listing_id": "d3b54672-5eac-56ff-b101-6b0fb54c82d2",
+      "listing_option_id": "b1fed1cb-9ffa-5628-b1f9-bc5ebae469ed",
+      "offer_code": "GROUP_5_PLUS",
+      "label": "Group 5+ shared",
+      "amount": 2140000,
+      "currency": "UGX",
+      "occupancy_description": "Four-night package total; two guests sharing; amount is per person, not the two-person total. 5+ total qualifying travellers; no additional discount. Approximate source USD 519",
+      "pricing_basis_code": "PER_PERSON",
+      "pricing_period_code": null,
+      "min_guests": 5,
+      "max_guests": null,
+      "occupancy_code": "SHARED",
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 7,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "P03-R2"
+    }
+  },
+  {
+    "ordinal": 344,
+    "table_name": "listing_price_offers",
+    "capture_ref": "P03-R3",
+    "payload": {
+      "id": "8d3e6b2f-5b90-57c4-8e1d-d0bd70426c91",
+      "listing_id": "d3b54672-5eac-56ff-b101-6b0fb54c82d2",
+      "listing_option_id": "a259a2b3-58d3-53b0-8b72-83d21b3b9e76",
+      "offer_code": "SOLO",
+      "label": "Solo",
+      "amount": 3735000,
+      "currency": "UGX",
+      "occupancy_description": "Four-night package total; Approximate source USD 907",
+      "pricing_basis_code": "PER_PERSON",
+      "pricing_period_code": null,
+      "min_guests": 1,
+      "max_guests": 1,
+      "occupancy_code": "SINGLE",
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 8,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "P03-R3"
+    }
+  },
+  {
+    "ordinal": 345,
+    "table_name": "listing_price_offers",
+    "capture_ref": "C04-R10",
+    "payload": {
+      "id": "d6aa1130-0f6f-5204-a069-e1ef1e1dc0dd",
+      "listing_id": "99f6d231-4551-5858-9edf-91a62a08adfe",
+      "listing_option_id": null,
+      "offer_code": "ADD_ON",
+      "label": "Per person per night",
+      "amount": 30000,
+      "currency": "UGX",
+      "occupancy_description": "Per person per night; Approximate source USD 7",
+      "pricing_basis_code": "PER_PERSON",
+      "pricing_period_code": "PER_NIGHT",
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": null,
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 9,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C04-R10"
+    }
+  },
+  {
+    "ordinal": 346,
+    "table_name": "listing_price_offers",
+    "capture_ref": "C05-R11",
+    "payload": {
+      "id": "a29b44e1-6335-50b9-849c-7b5611d20b27",
+      "listing_id": "e8bd2c32-88fb-56af-b1ac-0b84aed208d8",
+      "listing_option_id": null,
+      "offer_code": "ADD_ON",
+      "label": "Per person per night",
+      "amount": 70000,
+      "currency": "UGX",
+      "occupancy_description": "Per person per night; Approximate source USD 17",
+      "pricing_basis_code": "PER_PERSON",
+      "pricing_period_code": "PER_NIGHT",
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": null,
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 10,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C05-R11"
+    }
+  },
+  {
+    "ordinal": 347,
+    "table_name": "listing_price_offers",
+    "capture_ref": "C06-R12",
+    "payload": {
+      "id": "8d2db6d8-afe5-5293-afea-733a9e493330",
+      "listing_id": "9a8b2868-b005-5a7c-97e5-ce48d5f2c550",
+      "listing_option_id": "c21174f3-126a-5737-9cf7-93a1705a47e4",
+      "offer_code": "ADD_ON",
+      "label": "Per late breakfast box",
+      "amount": 20000,
+      "currency": "UGX",
+      "occupancy_description": "Per late breakfast box; Approximate source USD 5",
+      "pricing_basis_code": "FLAT_RATE",
+      "pricing_period_code": null,
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": null,
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 11,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C06-R12"
+    }
+  },
+  {
+    "ordinal": 348,
+    "table_name": "listing_price_offers",
+    "capture_ref": "C07-R13",
+    "payload": {
+      "id": "a204afee-dc64-5406-a135-b0dc4c28de65",
+      "listing_id": "4975cbdf-c671-55cc-a7eb-77129cbf92c0",
+      "listing_option_id": null,
+      "offer_code": "ADD_ON",
+      "label": "Per dinner voucher",
+      "amount": 35000,
+      "currency": "UGX",
+      "occupancy_description": "Per dinner voucher; Approximate source USD 8",
+      "pricing_basis_code": "FLAT_RATE",
+      "pricing_period_code": null,
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": null,
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 12,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C07-R13"
+    }
+  },
+  {
+    "ordinal": 349,
+    "table_name": "listing_price_offers",
+    "capture_ref": "C08-R14",
+    "payload": {
+      "id": "9aff15a5-3b04-5590-949f-24c43dcaa492",
+      "listing_id": "07a162a6-4b89-52ac-9047-66f561432546",
+      "listing_option_id": null,
+      "offer_code": "ADD_ON",
+      "label": "Per rain kit",
+      "amount": 30000,
+      "currency": "UGX",
+      "occupancy_description": "Per rain kit; Approximate source USD 7",
+      "pricing_basis_code": "FLAT_RATE",
+      "pricing_period_code": null,
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": null,
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 13,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C08-R14"
+    }
+  },
+  {
+    "ordinal": 350,
+    "table_name": "listing_price_offers",
+    "capture_ref": "C09-R15",
+    "payload": {
+      "id": "66cce861-4f2f-50cd-990c-393c7b1be2a9",
+      "listing_id": "16ebc700-65fa-537d-a1bc-a8d2b1dfd14d",
+      "listing_option_id": null,
+      "offer_code": "ADD_ON",
+      "label": "Per stay; guest basis unclear",
+      "amount": 35000,
+      "currency": "UGX",
+      "occupancy_description": "Per stay; guest basis unclear; Approximate source USD 8",
+      "pricing_basis_code": null,
+      "pricing_period_code": null,
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": null,
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 14,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C09-R15"
+    }
+  },
+  {
+    "ordinal": 351,
+    "table_name": "listing_price_offers",
+    "capture_ref": "C10-R16",
+    "payload": {
+      "id": "e0138580-58a7-58de-ad7a-9fd4130b92a6",
+      "listing_id": "db0c4cea-4c14-50e3-b5ed-9e7be38afe4e",
+      "listing_option_id": null,
+      "offer_code": "ADD_ON",
+      "label": "Participant basis not stated",
+      "amount": 120000,
+      "currency": "UGX",
+      "occupancy_description": "Participant basis not stated; Approximate source USD 29",
+      "pricing_basis_code": null,
+      "pricing_period_code": null,
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": null,
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 15,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C10-R16"
+    }
+  },
+  {
+    "ordinal": 352,
+    "table_name": "listing_price_offers",
+    "capture_ref": "C11-R17",
+    "payload": {
+      "id": "0d0bdf29-d421-59b7-bad3-a79b0225029a",
+      "listing_id": "750c0034-d4d4-5471-9903-3f3cd9a80a3c",
+      "listing_option_id": null,
+      "offer_code": "ADD_ON",
+      "label": "Participant basis not stated",
+      "amount": 300000,
+      "currency": "UGX",
+      "occupancy_description": "Participant basis not stated; Approximate source USD 73",
+      "pricing_basis_code": null,
+      "pricing_period_code": null,
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": null,
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 16,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C11-R17"
+    }
+  },
+  {
+    "ordinal": 353,
+    "table_name": "listing_price_offers",
+    "capture_ref": "P04-R18",
+    "payload": {
+      "id": "d5624cfa-b0c7-5830-8bbc-5ac8758f4d65",
+      "listing_id": "7c1ce966-9362-5098-afe0-9f1d49855d14",
+      "listing_option_id": null,
+      "offer_code": "ADD_ON",
+      "label": "Tubing plus one dinner voucher",
+      "amount": 155000,
+      "currency": "UGX",
+      "occupancy_description": "Tubing plus one dinner voucher; Approximate source USD 38",
+      "pricing_basis_code": null,
+      "pricing_period_code": null,
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": null,
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 17,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "P04-R18"
+    }
+  },
+  {
+    "ordinal": 354,
+    "table_name": "listing_price_offers",
+    "capture_ref": "C12-R19",
+    "payload": {
+      "id": "3f5b6ddd-5fd1-587a-9542-19aa59544c02",
+      "listing_id": "6c1250e9-f87b-5430-8768-843518060f35",
+      "listing_option_id": null,
+      "offer_code": "ADD_ON",
+      "label": "Per hour; participant/vehicle basis unclear",
+      "amount": 255000,
+      "currency": "UGX",
+      "occupancy_description": "Per hour; participant/vehicle basis unclear; Approximate source USD 62",
+      "pricing_basis_code": null,
+      "pricing_period_code": "PER_HOUR",
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": null,
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 18,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C12-R19"
+    }
+  },
+  {
+    "ordinal": 355,
+    "table_name": "listing_price_offers",
+    "capture_ref": "C13-R20",
+    "payload": {
+      "id": "8e20f23c-d572-5e71-b27f-a3f7cb9bbdb1",
+      "listing_id": "879f3ce8-fd39-5fe8-839e-65c5bcd4189f",
+      "listing_option_id": null,
+      "offer_code": "ADD_ON",
+      "label": "Per person",
+      "amount": 245000,
+      "currency": "UGX",
+      "occupancy_description": "Per person; Approximate source USD 59",
+      "pricing_basis_code": "PER_PERSON",
+      "pricing_period_code": null,
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": null,
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 19,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C13-R20"
+    }
+  },
+  {
+    "ordinal": 356,
+    "table_name": "listing_price_offers",
+    "capture_ref": "C14-R21",
+    "payload": {
+      "id": "7ee0c9d7-fe1a-563d-a155-53ff18506414",
+      "listing_id": "f411aa6e-1b7b-5264-9b4b-a198784273ff",
+      "listing_option_id": "a117e2f1-7ee1-5b36-972c-dda97f1a4e1e",
+      "offer_code": "ADD_ON",
+      "label": "Per vehicle up to five people",
+      "amount": 2470000,
+      "currency": "UGX",
+      "occupancy_description": "Per vehicle up to five people; Approximate source USD 600",
+      "pricing_basis_code": "PER_VEHICLE",
+      "pricing_period_code": null,
+      "min_guests": 1,
+      "max_guests": 5,
+      "occupancy_code": "PRIVATE",
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 20,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C14-R21"
+    }
+  },
+  {
+    "ordinal": 357,
+    "table_name": "listing_price_offers",
+    "capture_ref": "C14-R22",
+    "payload": {
+      "id": "e6ae94c8-ed52-5e95-9551-32ba60eab0a7",
+      "listing_id": "f411aa6e-1b7b-5264-9b4b-a198784273ff",
+      "listing_option_id": "0eae2e85-3212-5cbd-97e9-9512b452a5bf",
+      "offer_code": "ADD_ON",
+      "label": "Per person in a full vehicle",
+      "amount": 495000,
+      "currency": "UGX",
+      "occupancy_description": "Per person in a full vehicle; Approximate source USD 120",
+      "pricing_basis_code": "PER_PERSON",
+      "pricing_period_code": null,
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": "SHARED",
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 21,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C14-R22"
+    }
+  },
+  {
+    "ordinal": 358,
+    "table_name": "listing_price_offers",
+    "capture_ref": "C15-R23",
+    "payload": {
+      "id": "a0b1d56a-1594-5ce5-aecc-34a24fe54fe4",
+      "listing_id": "5b78f41b-459b-5ff0-898c-20e0e7e6ac9f",
+      "listing_option_id": null,
+      "offer_code": "EXTRA_PERSON",
+      "label": "Per extra person per night",
+      "amount": 245000,
+      "currency": "UGX",
+      "occupancy_description": "Per extra person per night; C15 supplement only; confirm benefits/capacity. Approximate source USD 59",
+      "pricing_basis_code": "PER_PERSON",
+      "pricing_period_code": "PER_NIGHT",
+      "min_guests": null,
+      "max_guests": null,
+      "occupancy_code": null,
+      "valid_from": null,
+      "valid_to": null,
+      "sort_order": 22,
+      "is_live": false,
+      "created_by": "UPLOAD",
+      "updated_by": "UPLOAD",
+      "_capture_ref": "C15-R23"
+    }
   }
 ]$magma_json$::jsonb)
  AS r(ordinal integer,table_name text,capture_ref text,payload jsonb);
@@ -8407,8 +9271,7 @@ UPDATE magma_rows r SET payload=jsonb_set(r.payload,'{quantity_basis}',to_jsonb(
  AND m.quantity_basis IS NOT NULL;
 UPDATE magma_rows r SET payload=r.payload || jsonb_build_object('schedule_mode',m.schedule_mode,'participation_mode',m.participation_mode)
  FROM magma_tour_map m WHERE r.table_name='tour_policies' AND r.capture_ref=m.capture_ref;
--- These cannot be inserted into listing_occurrences under schema 12.
-DELETE FROM magma_rows WHERE table_name='listing_occurrences' AND capture_ref IN ('P01-2026','P02-2026','P03-2026');
+-- All four date-only occurrences are now inserted using service-date migration 15.
 
 DO $resolve$
 DECLARE m record; r record; found_id uuid;
