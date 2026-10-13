@@ -7,7 +7,7 @@ APP_SERVICE   := app
 NGINX_SERVICE := nginx
 DB_SERVICE    := postgres
 
-.PHONY: help init build up down restart logs ps shell artisan composer migrate fresh seed seed-discover test clean prod-build prod-up prod-down queue-logs queue-restart
+.PHONY: help init build up down restart logs ps shell artisan composer migrate fresh seed seed-discover drop-orphan-kns-functions apply-listings-resources-sql test clean prod-build prod-up prod-down queue-logs queue-restart
 
 help: ## Show available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -62,6 +62,25 @@ seed: ## Run database seeders (includes Discover live demo listings)
 
 seed-discover: ## Publish live Discover demo listings (safe to re-run)
 	$(COMPOSE_DEV) exec $(APP_SERVICE) php artisan db:seed --class=DiscoverLiveListingsSeeder --force
+
+drop-orphan-kns-functions: ## Drop leftover kns* functions left behind by migrate:fresh
+	@test -f sql/dev_drop_orphan_kns_functions.sql || (echo "Missing sql/dev_drop_orphan_kns_functions.sql" && exit 1)
+	@echo "→ Dropping orphan kns* PL/pgSQL functions"
+	@$(COMPOSE_DEV) exec -T $(DB_SERVICE) \
+		sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -v ON_ERROR_STOP=1' < sql/dev_drop_orphan_kns_functions.sql
+
+apply-listings-resources-sql: ## Apply listings (8_*) + resources (9_*) schema/seed SQL into Postgres
+	@for f in \
+		sql/8_kampala_nonstop_listings_schema.sql \
+		sql/8_1_kampala_nonstop_listings_seed_data.sql \
+		sql/9_kampala_nonstop_resources_schema.sql \
+		sql/9_1_kampala_nonstop_resources_seed_data.sql; do \
+		test -f $$f || (echo "Missing $$f" && exit 1); \
+		echo "→ Applying $$f"; \
+		$(COMPOSE_DEV) exec -T $(DB_SERVICE) \
+			sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -v ON_ERROR_STOP=1' < $$f || exit 1; \
+	done
+	@echo "Listings + resources SQL applied."
 
 test: ## Run PHPUnit tests
 	$(COMPOSE_DEV) exec $(APP_SERVICE) php artisan test

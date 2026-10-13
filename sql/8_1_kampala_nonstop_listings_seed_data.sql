@@ -1,13 +1,13 @@
 ﻿-- Kampala Nonstop
 -- Listing reference seed data
 -- Directory listings, options, hours and rules are operational data and are not seeded here.
+-- IDs use table DEFAULT gen_random_uuid() (do not hard-code non-RFC UUID literals).
 
 
 BEGIN;
 
 
 INSERT INTO listing_types (
-    id,
     code,
     name,
     description,
@@ -17,7 +17,6 @@ INSERT INTO listing_types (
 )
 VALUES
     (
-        '0199-3ab1-7001-8000-000000000001',
         'ACTIVITY',
         'Activity',
         'A specific thing a traveller can do.',
@@ -26,7 +25,6 @@ VALUES
         CURRENT_TIMESTAMP
     ),
     (
-        '0199-3ab1-7002-8000-000000000002',
         'EVENT',
         'Event',
         'A scheduled happening that travellers can attend or book.',
@@ -35,7 +33,6 @@ VALUES
         CURRENT_TIMESTAMP
     ),
     (
-        '0199-3ab1-7003-8000-000000000003',
         'TOUR',
         'Tour',
         'A structured journey or route offered to travellers.',
@@ -44,7 +41,6 @@ VALUES
         CURRENT_TIMESTAMP
     ),
     (
-        '0199-3ab1-7004-8000-000000000004',
         'SERVICE',
         'Service',
         'A bookable service delivered for a traveller.',
@@ -53,7 +49,6 @@ VALUES
         CURRENT_TIMESTAMP
     ),
     (
-        '0199-3ab1-7005-8000-000000000005',
         'EXPERIENCE',
         'Experience',
         'A curated combination or sequence of activities.',

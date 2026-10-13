@@ -263,6 +263,31 @@ class UserProfileDomainTest extends TestCase
         $this->assertDatabaseMissing('user_favourites', ['id' => $favourite['id']]);
     }
 
+    public function test_listing_favourite_can_be_stored(): void
+    {
+        $user = $this->authenticatedUser();
+        Sanctum::actingAs($user);
+
+        $listingId = (string) Str::uuid7();
+
+        $favourite = $this->postJson('/api/v1/user/favourites', [
+            'favouritable_type' => 'listing',
+            'favouritable_id' => $listingId,
+        ])
+            ->assertCreated()
+            ->assertJsonPath('favourite.favouritable_type', 'listing')
+            ->assertJsonPath('favourite.favouritable_id', $listingId)
+            ->json('favourite');
+
+        $this->getJson('/api/v1/user/favourites')
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $favourite['id'],
+                'favouritable_type' => 'listing',
+                'favouritable_id' => $listingId,
+            ]);
+    }
+
     public function test_user_cannot_delete_another_users_favourite(): void
     {
         $owner = $this->authenticatedUser();

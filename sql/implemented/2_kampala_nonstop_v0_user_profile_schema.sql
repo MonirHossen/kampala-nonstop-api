@@ -120,7 +120,8 @@ CREATE TABLE user_favourites (
                                 'tour',
                                 'service',
                                 'organisation',
-                                'experience'
+                                'experience',
+                                'listing'
                             )
                         ),
     favouritable_id     UUID NOT NULL,

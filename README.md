@@ -175,6 +175,8 @@ docker compose --env-file .env.docker -f docker-compose.yml -f docker-compose.pr
 
 **Port already in use.** Change `APP_PORT` or `POSTGRES_PORT` in `.env.docker`, then run `make down && make up`.
 
+If you change `APP_PORT`, also update `kampala-nonstop-frontend/src/environments/environment.ts` (`apiUrl`) to the same port, or Discover will call a dead URL. From the Kampala monorepo root: `make check-config`.
+
 **502 / 500 on first request.** Wait for Composer install and migrations to finish: `make logs`.
 
 **Reset everything (including database):**

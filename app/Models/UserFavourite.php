@@ -21,6 +21,7 @@ class UserFavourite extends Model
         'service',
         'organisation',
         'experience',
+        'listing',
     ];
 
     /**
