@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             LocalKnowledgeReferenceSeeder::class,
             LocalKnowledgeV0Seeder::class,
             DiscoverLiveListingsSeeder::class,
+            NyengeNyegeListingsSeeder::class,
         ]);
     }
 }

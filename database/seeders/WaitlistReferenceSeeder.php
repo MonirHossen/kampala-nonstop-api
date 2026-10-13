@@ -33,6 +33,7 @@ class WaitlistReferenceSeeder extends Seeder
             ['code' => 'OTHER', 'name' => 'Other', 'type' => 'other'],
             ['code' => 'UNAA_DENVER_2026', 'name' => 'UNAA Denver 2026', 'type' => 'event'],
             ['code' => 'belgium_nyege_2026', 'name' => 'Nyege World Belgium 2026', 'type' => 'event'],
+            ['code' => 'nyenge_nyege', 'name' => 'Nyenge Nyenge Event homepage', 'type' => 'event'],
 
         ];
 

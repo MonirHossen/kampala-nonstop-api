@@ -287,6 +287,7 @@ class ListingReferenceSeeder extends Seeder
             ['code' => 'VEGAN_OPTIONS', 'name' => 'Vegan options', 'is_live' => true],
             ['code' => 'LOCAL_FAVOURITE', 'name' => 'Local favourite', 'is_live' => true],
             ['code' => 'HIDDEN_GEM', 'name' => 'Hidden gem', 'is_live' => true],
+            ['code' => 'NYENGE_NYEGE', 'name' => 'Nyenge Nyenge', 'is_live' => true],
         ]);
     }
 

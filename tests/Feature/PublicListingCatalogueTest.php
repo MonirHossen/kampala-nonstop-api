@@ -104,6 +104,36 @@ class PublicListingCatalogueTest extends TestCase
             ->assertJsonPath('meta.total', 0);
     }
 
+    public function test_tag_filter_returns_only_matching_listings(): void
+    {
+        $nyenge = Tag::query()->create([
+            'code' => 'NYENGE_NYEGE',
+            'name' => 'Nyenge Nyenge',
+            'is_live' => true,
+        ]);
+
+        DB::table('listing_tags')->insert([
+            'listing_id' => $this->liveEvent->id,
+            'tag_id' => $nyenge->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->getJson('/api/v1/listings?tag=NYENGE_NYEGE')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.0.slug', 'ndere-cultural-night');
+
+        $this->getJson('/api/v1/listings?tag=LOCAL_FAVOURITE')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.0.slug', 'nile-street-food-walk');
+
+        $this->getJson('/api/v1/listings?tag=MISSING_TAG')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 0);
+    }
+
     public function test_show_returns_live_detail_and_hides_drafts_and_offline_media(): void
     {
         $this->getJson('/api/v1/listings/nile-street-food-walk')

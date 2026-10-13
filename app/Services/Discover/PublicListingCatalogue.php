@@ -176,6 +176,12 @@ class PublicListingCatalogue
             $query->where('is_hot_pick', true);
         }
 
+        $tag = isset($filters['tag']) ? strtoupper(trim((string) $filters['tag'])) : '';
+
+        if ($tag !== '') {
+            $query->whereHas('tags', fn (Builder $tags) => $tags->where('code', $tag));
+        }
+
         return $query
             ->orderByDesc('is_hot_pick')
             ->orderByDesc('is_local_gem')

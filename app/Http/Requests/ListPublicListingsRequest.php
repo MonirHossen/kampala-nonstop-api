@@ -26,6 +26,11 @@ class ListPublicListingsRequest extends FormRequest
             $normalised[$field] = $value === '' ? null : $value;
         }
 
+        if ($this->has('tag') && is_string($this->input('tag'))) {
+            $tag = strtoupper(trim($this->input('tag')));
+            $normalised['tag'] = $tag === '' ? null : $tag;
+        }
+
         if ($this->has('country_code') && is_string($this->input('country_code'))) {
             $normalised['country_code'] = strtoupper(trim($this->input('country_code')));
         }
@@ -56,6 +61,7 @@ class ListPublicListingsRequest extends FormRequest
             'type' => ['sometimes', 'nullable', 'string', Rule::in(DiscoverCatalogueMap::acceptedTypes())],
             'interest' => ['sometimes', 'nullable', 'string', Rule::in(DiscoverCatalogueMap::interests())],
             'location' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'tag' => ['sometimes', 'nullable', 'string', 'max:64', 'regex:/^[A-Z0-9_]+$/'],
             'hot_pick' => ['sometimes', 'boolean'],
             'page' => ['sometimes', 'integer', 'min:1'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:24'],
