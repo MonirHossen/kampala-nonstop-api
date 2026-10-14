@@ -236,11 +236,11 @@ class UserProfileService
     }
 
     /**
-     * @param  array{favouritable_type: string, favouritable_id: string, notes?: string|null}  $data
+     * @param  array{listing_id: string, notes?: string|null}  $data
      */
     public function addFavourite(User $user, array $data): UserFavourite
     {
-        return $user->favourites()->create($data);
+        return $user->favourites()->create($data)->load('listing');
     }
 
     public function deleteFavourite(User $user, UserFavourite $favourite): void
@@ -265,7 +265,10 @@ class UserProfileService
      */
     public function listFavourites(User $user): Collection
     {
-        return $user->favourites()->latest('created_at')->get();
+        return $user->favourites()
+            ->with('listing')
+            ->latest('created_at')
+            ->get();
     }
 
     /**

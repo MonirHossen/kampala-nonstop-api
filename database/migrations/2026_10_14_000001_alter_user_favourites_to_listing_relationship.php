@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Convert user_favourites to a direct user -> listing relationship.
  * Mirrors admin-kampala-nonstop/sql/16_1_kampala_nonstop_user_favourites_alter.sql
+ *
+ * Legacy rows with favouritable_type = 'listing' are mapped to listing_id.
+ * Any remaining unmappable rows are removed so the NOT NULL constraint can be applied.
  */
 return new class extends Migration
 {
@@ -22,23 +25,17 @@ return new class extends Migration
         }
 
         if (! Schema::hasColumn('user_favourites', 'listing_id')) {
-            $legacyRows = (int) DB::table('user_favourites')->count();
-            if ($legacyRows > 0) {
-                throw new \RuntimeException(
-                    "user_favourites contains {$legacyRows} row(s) without listing_id. Map existing favourites to listings.id before running this migration."
-                );
-            }
-
             Schema::table('user_favourites', function (Blueprint $table) {
                 $table->uuid('listing_id')->nullable();
             });
-        } else {
-            $legacyRows = (int) DB::table('user_favourites')->whereNull('listing_id')->count();
-            if ($legacyRows > 0) {
-                throw new \RuntimeException(
-                    "user_favourites contains {$legacyRows} row(s) without listing_id. Map existing favourites to listings.id before running this migration."
-                );
-            }
+        }
+
+        $this->backfillListingIds();
+
+        $unmapped = (int) DB::table('user_favourites')->whereNull('listing_id')->count();
+        if ($unmapped > 0) {
+            // Dev / cutover: drop favourites that cannot be mapped to a listings.id row.
+            DB::table('user_favourites')->whereNull('listing_id')->delete();
         }
 
         if (! $this->constraintExists('user_favourites', 'fk_user_favourites_listing')) {
@@ -127,6 +124,47 @@ return new class extends Migration
         if (Schema::hasColumn('user_favourites', 'favouritable_id')) {
             DB::statement('ALTER TABLE user_favourites ALTER COLUMN favouritable_id SET NOT NULL');
         }
+    }
+
+    private function backfillListingIds(): void
+    {
+        if (! Schema::hasColumn('user_favourites', 'favouritable_id')) {
+            return;
+        }
+
+        // Prefer explicit listing morph targets.
+        if (Schema::hasColumn('user_favourites', 'favouritable_type')) {
+            DB::statement(
+                "UPDATE user_favourites AS uf
+                 SET listing_id = uf.favouritable_id
+                 FROM listings AS l
+                 WHERE uf.listing_id IS NULL
+                   AND uf.favouritable_type = 'listing'
+                   AND uf.favouritable_id IS NOT NULL
+                   AND l.id = uf.favouritable_id"
+            );
+        }
+
+        // Fallback: favouritable_id already points at a listing (even if type differs).
+        DB::statement(
+            "UPDATE user_favourites AS uf
+             SET listing_id = uf.favouritable_id
+             FROM listings AS l
+             WHERE uf.listing_id IS NULL
+               AND uf.favouritable_id IS NOT NULL
+               AND l.id = uf.favouritable_id"
+        );
+
+        // Deduplicate after backfill so the unique (user_id, listing_id) can be added.
+        DB::statement(
+            "DELETE FROM user_favourites AS uf
+             USING user_favourites AS kept
+             WHERE uf.listing_id IS NOT NULL
+               AND kept.listing_id IS NOT NULL
+               AND uf.user_id = kept.user_id
+               AND uf.listing_id = kept.listing_id
+               AND uf.ctid > kept.ctid"
+        );
     }
 
     private function constraintExists(string $table, string $constraint): bool

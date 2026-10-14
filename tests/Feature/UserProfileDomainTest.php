@@ -3,13 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\Currency;
+use App\Models\Listing;
+use App\Models\ListingType;
 use App\Models\User;
 use App\Models\UserConsent;
-use App\Models\UserFavourite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -233,29 +234,30 @@ class UserProfileDomainTest extends TestCase
 
     public function test_favourites_crud(): void
     {
+        $listing = $this->createFavouriteListing('Favourite Walk', 'favourite-walk');
+
         $user = $this->authenticatedUser();
         Sanctum::actingAs($user);
 
-        $placeId = (string) Str::uuid7();
-
         $favourite = $this->postJson('/api/v1/user/favourites', [
-            'favouritable_type' => 'place',
-            'favouritable_id' => $placeId,
+            'listing_id' => $listing->id,
             'notes' => 'Must visit',
         ])
             ->assertCreated()
-            ->assertJsonPath('favourite.favouritable_type', 'place')
+            ->assertJsonPath('favourite.listing_id', $listing->id)
             ->assertJsonPath('favourite.notes', 'Must visit')
+            ->assertJsonPath('favourite.listing.slug', 'favourite-walk')
             ->json('favourite');
 
         $this->postJson('/api/v1/user/favourites', [
-            'favouritable_type' => 'place',
-            'favouritable_id' => $placeId,
+            'listing_id' => $listing->id,
         ])->assertUnprocessable();
 
         $this->getJson('/api/v1/user/favourites')
             ->assertOk()
-            ->assertJsonCount(1, 'favourites');
+            ->assertJsonCount(1, 'favourites')
+            ->assertJsonPath('favourites.0.listing_id', $listing->id)
+            ->assertJsonPath('favourites.0.listing.name', 'Favourite Walk');
 
         $this->deleteJson('/api/v1/user/favourites/'.$favourite['id'])
             ->assertOk();
@@ -263,39 +265,25 @@ class UserProfileDomainTest extends TestCase
         $this->assertDatabaseMissing('user_favourites', ['id' => $favourite['id']]);
     }
 
-    public function test_listing_favourite_can_be_stored(): void
+    public function test_listing_favourite_requires_existing_listing(): void
     {
         $user = $this->authenticatedUser();
         Sanctum::actingAs($user);
 
-        $listingId = (string) Str::uuid7();
-
-        $favourite = $this->postJson('/api/v1/user/favourites', [
-            'favouritable_type' => 'listing',
-            'favouritable_id' => $listingId,
-        ])
-            ->assertCreated()
-            ->assertJsonPath('favourite.favouritable_type', 'listing')
-            ->assertJsonPath('favourite.favouritable_id', $listingId)
-            ->json('favourite');
-
-        $this->getJson('/api/v1/user/favourites')
-            ->assertOk()
-            ->assertJsonFragment([
-                'id' => $favourite['id'],
-                'favouritable_type' => 'listing',
-                'favouritable_id' => $listingId,
-            ]);
+        $this->postJson('/api/v1/user/favourites', [
+            'listing_id' => '0199f0a0-0000-7000-8000-000000000001',
+        ])->assertUnprocessable();
     }
 
     public function test_user_cannot_delete_another_users_favourite(): void
     {
+        $listing = $this->createFavouriteListing('Owned Favourite', 'owned-favourite');
+
         $owner = $this->authenticatedUser();
         Sanctum::actingAs($owner);
 
         $favourite = $this->postJson('/api/v1/user/favourites', [
-            'favouritable_type' => 'tour',
-            'favouritable_id' => (string) Str::uuid7(),
+            'listing_id' => $listing->id,
         ])->assertCreated()->json('favourite');
 
         $other = $this->authenticatedUser(['email' => 'other@example.com']);
@@ -305,5 +293,26 @@ class UserProfileDomainTest extends TestCase
             ->assertNotFound();
 
         $this->assertDatabaseHas('user_favourites', ['id' => $favourite['id']]);
+    }
+
+    private function createFavouriteListing(string $name, string $slug): Listing
+    {
+        if (! Schema::hasTable('listings') || ! Schema::hasTable('listing_types')) {
+            $this->markTestSkipped('Listings schema is required for favourite tests.');
+        }
+
+        $listingType = ListingType::query()->firstOrCreate(
+            ['code' => 'ACTIVITY'],
+            ['name' => 'Activity', 'is_live' => true],
+        );
+
+        return Listing::query()->create([
+            'listing_type_id' => $listingType->id,
+            'name' => $name,
+            'slug' => $slug,
+            'summary' => 'Saved for later.',
+            'country_code' => 'UG',
+            'is_live' => true,
+        ]);
     }
 }

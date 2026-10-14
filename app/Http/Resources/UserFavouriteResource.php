@@ -18,11 +18,18 @@ class UserFavouriteResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'favouritable_type' => $this->favouritable_type,
-            'favouritable_id' => $this->favouritable_id,
+            'listing_id' => $this->listing_id,
             'notes' => $this->notes,
             'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'listing' => $this->whenLoaded('listing', function () {
+                return [
+                    'id' => $this->listing->id,
+                    'name' => $this->listing->name,
+                    'slug' => $this->listing->slug,
+                    'summary' => $this->listing->summary,
+                    'is_live' => (bool) $this->listing->is_live,
+                ];
+            }),
         ];
     }
 }

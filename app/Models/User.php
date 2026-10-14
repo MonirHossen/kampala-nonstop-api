@@ -101,6 +101,14 @@ class User extends Authenticatable
     }
 
     /**
+     * @return HasMany<Trip, $this>
+     */
+    public function ownedTrips(): HasMany
+    {
+        return $this->hasMany(Trip::class, 'owner_user_id');
+    }
+
+    /**
      * @return HasMany<SocialAccount, $this>
      */
     public function socialAccounts(): HasMany
