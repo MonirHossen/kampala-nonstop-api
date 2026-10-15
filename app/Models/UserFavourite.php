@@ -10,27 +10,14 @@ class UserFavourite extends Model
 {
     use HasUuidPrimaryKey;
 
-    /**
-     * @var list<string>
-     */
-    public const TYPES = [
-        'place',
-        'activity',
-        'event',
-        'tour',
-        'service',
-        'organisation',
-        'experience',
-        'listing',
-    ];
+    public const UPDATED_AT = null;
 
     /**
      * @var list<string>
      */
     protected $fillable = [
         'user_id',
-        'favouritable_type',
-        'favouritable_id',
+        'listing_id',
         'notes',
     ];
 
@@ -40,5 +27,13 @@ class UserFavourite extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return BelongsTo<Listing, $this>
+     */
+    public function listing(): BelongsTo
+    {
+        return $this->belongsTo(Listing::class);
     }
 }

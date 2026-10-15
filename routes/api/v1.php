@@ -24,6 +24,9 @@ use App\Http\Controllers\Api\User\FavouriteController;
 use App\Http\Controllers\Api\User\NotificationPreferenceController;
 use App\Http\Controllers\Api\User\PreferenceController;
 use App\Http\Controllers\Api\User\ProfileController;
+use App\Http\Controllers\Api\User\TripController;
+use App\Http\Controllers\Api\User\TripCustomerController;
+use App\Http\Controllers\Api\User\TripListingController;
 use App\Http\Controllers\Api\WaitlistController;
 use App\Http\Controllers\Api\WaitlistInvitationController;
 use App\Http\Controllers\Api\WaitlistUnsubscribeController;
@@ -123,6 +126,18 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::get('/favourites', [FavouriteController::class, 'index']);
     Route::post('/favourites', [FavouriteController::class, 'store']);
     Route::delete('/favourites/{favourite}', [FavouriteController::class, 'destroy']);
+
+    Route::get('/trips', [TripController::class, 'index']);
+    Route::post('/trips', [TripController::class, 'store']);
+    Route::get('/trips/{trip}', [TripController::class, 'show']);
+    Route::put('/trips/{trip}', [TripController::class, 'update']);
+    Route::delete('/trips/{trip}', [TripController::class, 'destroy']);
+
+    Route::post('/trips/listings', [TripListingController::class, 'store']);
+    Route::delete('/trips/{trip}/listings/{tripListing}', [TripListingController::class, 'destroy']);
+
+    Route::post('/trips/{trip}/customers', [TripCustomerController::class, 'store']);
+    Route::delete('/trips/{trip}/customers/{customer}', [TripCustomerController::class, 'destroy']);
 });
 
 /*
