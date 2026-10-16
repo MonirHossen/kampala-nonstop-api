@@ -16,6 +16,21 @@ class ListingCatalogueController extends Controller
         return response()->json($this->catalogue->page($request->validated()));
     }
 
+    public function filters(): JsonResponse
+    {
+        $country = strtoupper((string) request()->query('country_code', 'UG'));
+
+        if (! preg_match('/^[A-Z]{2}$/', $country)) {
+            return response()->json([
+                'message' => 'The country code must be two letters.',
+            ], 422);
+        }
+
+        return response()->json([
+            'data' => $this->catalogue->filters($country),
+        ]);
+    }
+
     public function show(string $slug): JsonResponse
     {
         $country = strtoupper((string) request()->query('country_code', 'UG'));

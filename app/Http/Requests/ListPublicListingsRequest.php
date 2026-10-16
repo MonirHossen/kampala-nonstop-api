@@ -64,7 +64,7 @@ class ListPublicListingsRequest extends FormRequest
             'tag' => ['sometimes', 'nullable', 'string', 'max:64', 'regex:/^[A-Z0-9_]+$/'],
             'hot_pick' => ['sometimes', 'boolean'],
             'page' => ['sometimes', 'integer', 'min:1'],
-            'per_page' => ['sometimes', 'integer', 'min:1', 'max:24'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:48'],
             'country_code' => ['sometimes', 'string', 'size:2', 'regex:/^[A-Z]{2}$/'],
         ];
     }

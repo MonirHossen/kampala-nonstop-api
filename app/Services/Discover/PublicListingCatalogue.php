@@ -2,11 +2,13 @@
 
 namespace App\Services\Discover;
 
+use App\Models\GeographicArea;
 use App\Models\Listing;
 use App\Models\ListingBookingHour;
 use App\Models\ListingBookingRule;
 use App\Models\ListingMedia;
 use App\Models\ListingOption;
+use App\Models\ListingType;
 use App\Models\Tag;
 use App\Support\DiscoverCatalogueMap;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +17,7 @@ class PublicListingCatalogue
 {
     public const DEFAULT_PER_PAGE = 12;
 
-    public const MAX_PER_PAGE = 24;
+    public const MAX_PER_PAGE = 48;
 
     private const DAY_NAMES = [
         0 => 'Sunday',
@@ -62,6 +64,59 @@ class PublicListingCatalogue
             ->with(['options', 'tags', 'bookingHours', 'bookingRule'])
             ->where('slug', $slug)
             ->first();
+    }
+
+    /**
+     * Filter option lists for the Discover catalogue dropdowns.
+     *
+     * @return array{
+     *     locations: list<array{name: string, code: string}>,
+     *     types: list<array{label: string, code: string}>,
+     *     interests: list<array{label: string}>
+     * }
+     */
+    public function filters(string $countryCode = 'UG'): array
+    {
+        $country = strtoupper($countryCode);
+
+        $locations = GeographicArea::query()
+            ->live()
+            ->where('country_code', $country)
+            ->whereHas('type', fn (Builder $type) => $type->where('code', 'CITY')->where('is_live', true))
+            ->orderBy('name')
+            ->get(['code', 'name'])
+            ->map(static fn (GeographicArea $area): array => [
+                'name' => $area->name,
+                'code' => $area->code,
+            ])
+            ->values()
+            ->all();
+
+        $liveTypeCodes = ListingType::query()
+            ->where('is_live', true)
+            ->pluck('code')
+            ->all();
+
+        $types = [];
+        foreach (DiscoverCatalogueMap::TYPE_LABELS as $code => $label) {
+            if (in_array($code, $liveTypeCodes, true)) {
+                $types[] = [
+                    'label' => $label,
+                    'code' => $code,
+                ];
+            }
+        }
+
+        $interests = array_map(
+            static fn (string $label): array => ['label' => $label],
+            DiscoverCatalogueMap::interests()
+        );
+
+        return [
+            'locations' => $locations,
+            'types' => $types,
+            'interests' => $interests,
+        ];
     }
 
     /**
@@ -182,7 +237,16 @@ class PublicListingCatalogue
             $query->whereHas('tags', fn (Builder $tags) => $tags->where('code', $tag));
         }
 
+        $typeRank = [];
+        foreach (array_keys(DiscoverCatalogueMap::TYPE_LABELS) as $index => $code) {
+            $typeRank[] = "WHEN '{$code}' THEN {$index}";
+        }
+        $typeOrderSql = 'CASE (SELECT code FROM listing_types WHERE listing_types.id = listings.listing_type_id) '
+            .implode(' ', $typeRank)
+            .' ELSE 99 END';
+
         return $query
+            ->orderByRaw($typeOrderSql)
             ->orderByDesc('is_hot_pick')
             ->orderByDesc('is_local_gem')
             ->orderBy('name');

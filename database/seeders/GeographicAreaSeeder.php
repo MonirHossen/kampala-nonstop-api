@@ -68,6 +68,8 @@ class GeographicAreaSeeder extends Seeder
             ['ANKOLE', 'Ankole', 'CULTURAL_REGION', 'SOUTH_WEST'],
             ['KIGEZI', 'Kigezi', 'CULTURAL_REGION', 'SOUTH_WEST'],
             ['KAMPALA', 'Kampala', 'CITY', 'CENTRAL'],
+            // Magma sample SQL hardcodes this Jinja id — keep it stable.
+            ['JINJA', 'Jinja', 'CITY', 'BUSOGA', '01a12b1d-6728-7080-b21b-2eaa62c6d86a'],
             ['KATWE', 'Katwe', 'NEIGHBOURHOOD', 'KAMPALA'],
             ['WAKALIGA', 'Wakaliga', 'NEIGHBOURHOOD', 'KAMPALA'],
             ['LAKE_VICTORIA', 'Lake Victoria', 'LAKE', null],
@@ -93,18 +95,36 @@ class GeographicAreaSeeder extends Seeder
         $typeIds = GeographicAreaType::query()->pluck('id', 'code');
         $areaIds = [];
 
-        foreach ($areas as [$code, $name, $typeCode, $parentCode]) {
+        foreach ($areas as $area) {
+            [$code, $name, $typeCode, $parentCode] = $area;
+            $fixedId = $area[4] ?? null;
             $parentId = $parentCode === null ? null : ($areaIds[$parentCode] ?? null);
 
-            $saved = GeographicArea::query()->updateOrCreate(
-                ['country_code' => 'UG', 'code' => $code],
-                [
-                    'parent_geographic_area_id' => $parentId,
-                    'geographic_area_type_id' => $typeIds[$typeCode],
-                    'name' => $name,
-                    'is_live' => true,
-                ],
-            );
+            $attributes = [
+                'parent_geographic_area_id' => $parentId,
+                'geographic_area_type_id' => $typeIds[$typeCode],
+                'name' => $name,
+                'is_live' => true,
+            ];
+
+            $existing = GeographicArea::query()
+                ->where('country_code', 'UG')
+                ->where('code', $code)
+                ->first();
+
+            if ($existing === null && is_string($fixedId) && $fixedId !== '') {
+                $attributes['id'] = $fixedId;
+                $saved = GeographicArea::query()->create([
+                    'country_code' => 'UG',
+                    'code' => $code,
+                    ...$attributes,
+                ]);
+            } else {
+                $saved = GeographicArea::query()->updateOrCreate(
+                    ['country_code' => 'UG', 'code' => $code],
+                    $attributes,
+                );
+            }
 
             $areaIds[$code] = $saved->id;
         }

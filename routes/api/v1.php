@@ -262,6 +262,7 @@ Route::prefix('local-knowledge')->group(function () {
 |--------------------------------------------------------------------------
 */
 
+Route::get('/listings/filters', [ListingCatalogueController::class, 'filters']);
 Route::get('/listings', [ListingCatalogueController::class, 'index']);
 Route::get('/listings/{slug}', [ListingCatalogueController::class, 'show'])
     ->where('slug', '[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*');

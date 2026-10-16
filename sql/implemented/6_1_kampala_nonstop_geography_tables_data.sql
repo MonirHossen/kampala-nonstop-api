@@ -135,6 +135,15 @@ VALUES
      (SELECT id FROM public.geographic_areas WHERE country_code = 'UG' AND code = 'CENTRAL'), 'UG', TRUE)
 ON CONFLICT (country_code, code) DO NOTHING;
 
+-- Jinja (parent: BUSOGA) — Magma sample SQL hardcodes this id
+INSERT INTO public.geographic_areas
+    (id, code, name, geographic_area_type_id, parent_geographic_area_id, country_code, is_live)
+VALUES
+    ('01a12b1d-6728-7080-b21b-2eaa62c6d86a', 'JINJA', 'Jinja',
+     (SELECT id FROM public.geographic_area_types WHERE code = 'CITY'),
+     (SELECT id FROM public.geographic_areas WHERE country_code = 'UG' AND code = 'BUSOGA'), 'UG', TRUE)
+ON CONFLICT (country_code, code) DO NOTHING;
+
 -- Katwe (parent: KAMPALA)
 INSERT INTO public.geographic_areas
     (code, name, geographic_area_type_id, parent_geographic_area_id, country_code, is_live)

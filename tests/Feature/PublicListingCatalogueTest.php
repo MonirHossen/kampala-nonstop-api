@@ -61,6 +61,26 @@ class PublicListingCatalogueTest extends TestCase
         $this->assertSame('Chapati on the grill', $food['cover']['alt_text']);
     }
 
+    public function test_filters_endpoint_returns_cities_types_and_interests(): void
+    {
+        GeographicArea::query()->create([
+            'geographic_area_type_id' => GeographicAreaType::query()->where('code', 'CITY')->value('id'),
+            'country_code' => 'UG',
+            'code' => 'JINJA',
+            'name' => 'Jinja',
+            'is_live' => true,
+        ]);
+
+        $response = $this->getJson('/api/v1/listings/filters');
+
+        $response->assertOk();
+        $locations = collect($response->json('data.locations'))->pluck('name')->all();
+        $this->assertSame(['Jinja', 'Kampala'], $locations);
+        $this->assertContains('Activities', collect($response->json('data.types'))->pluck('label')->all());
+        $this->assertContains('Food & Local Life', collect($response->json('data.interests'))->pluck('label')->all());
+        $this->assertSame('ACTIVITY', collect($response->json('data.types'))->firstWhere('label', 'Activities')['code']);
+    }
+
     public function test_type_interest_location_and_hot_pick_filters(): void
     {
         $this->getJson('/api/v1/listings?type=Activities')
